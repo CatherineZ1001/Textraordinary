@@ -10,7 +10,7 @@ npm install
 
 ### Firebase configuration
 
-Authentication uses Firebase. Copy `.env.example` to `.env.local` and fill in the values from the Firebase console (Project settings → General → Your apps → Web app). In Authentication → Sign-in method, enable **Email/Password** and **Google**. `.env.local` is gitignored, so each developer creates their own.
+Authentication uses Firebase. Copy `.env.example` to `.env.local` and fill in the values from the Firebase console (Project settings → General → Your apps → Web app). `.env.local` is gitignored, so each developer creates their own.
 
 ### Compile and Hot-Reload for Development
 
