@@ -19,6 +19,8 @@
   --screen: #ffffff;
 
   --font-ui: 'Schibsted Grotesk', system-ui, sans-serif;
+  /* the coach's handwriting on the feedback card */
+  --font-hand: 'Caveat', 'Segoe Print', cursive;
   /* iPhones/Macs get Apple's own system font; everyone else gets Inter */
   --font-ios: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, sans-serif;
 }

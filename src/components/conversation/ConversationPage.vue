@@ -25,6 +25,10 @@ import { unlockAudio, isAudioUnlocked, playReceive, playSend } from '@/audio/mes
 // Emits:
 //   select(optionId)   - a suggested reply was tapped
 //   submit(reply)      - the reply was sent (PBI 07 / PBI 09 grade it)
+//
+// Slots:
+//   response  - replaces the suggested-reply tray
+//   feedback  - shown under the scenario note, e.g. the coach's grade for the reply
 const props = withDefaults(
   defineProps<{
     scenario: Scenario
@@ -172,13 +176,19 @@ const placeholder = computed(() => {
 
 <template>
   <div class="page">
-    <ScenarioHeader
-      class="brief"
-      :title="scenario.title"
-      :category="scenario.category"
-      :tone="scenario.tone"
-      :context="scenario.context"
-    />
+    <div class="side" :class="{ 'has-feedback': $slots.feedback }">
+      <ScenarioHeader
+        :title="scenario.title"
+        :category="scenario.category"
+        :tone="scenario.tone"
+        :context="scenario.context"
+      />
+      <Transition name="drop">
+        <div v-if="$slots.feedback" class="feedback">
+          <slot name="feedback" />
+        </div>
+      </Transition>
+    </div>
 
     <PhoneFrame
       class="phone"
@@ -242,7 +252,20 @@ const placeholder = computed(() => {
   gap: 56px;
   align-items: start;
 }
-.brief { position: sticky; top: 56px; margin-top: 8px; }
+.side {
+  position: sticky;
+  top: 56px;
+  margin-top: 8px;
+}
+/* the feedback card can make the column taller than the window, so let it scroll with the page */
+.side.has-feedback { position: static; }
+.feedback { margin-top: 30px; }
+
+/* the feedback card is dropped onto the desk */
+.drop-enter-active { transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1), opacity 0.3s; }
+.drop-leave-active { transition: opacity 0.2s; }
+.drop-enter-from { opacity: 0; transform: translateY(-16px) scale(0.97); }
+.drop-leave-to { opacity: 0; }
 .phone { position: sticky; top: 24px; }
 
 /* room for the home indicator when nothing sits under the input bar */
@@ -262,7 +285,9 @@ const placeholder = computed(() => {
     gap: 16px;
     padding: 16px;
   }
-  .brief { position: static; margin-top: 0; }
+  /* stacked: note, then phone, then the feedback card under the phone */
+  .side { display: contents; }
+  .feedback { order: 1; margin-top: 8px; }
   .phone { position: static; }
   .home-space { padding-bottom: 12px; }
 }
