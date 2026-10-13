@@ -1,0 +1,37 @@
+/*
+  Textraordinary theme tokens.
+  The page is a desk, the conversation happens on an iPhone, and the
+  scenario brief is a note from a coach sitting next to it.
+*/
+:root {
+  --desk: #d9e1e7;        /* cool grey-blue page */
+  --desk-ink: #4a5866;
+  --ink: #17202a;
+  --note: #fff3b3;        /* coach's note */
+
+  /* iOS-style colors */
+  --ios-blue: #007aff;
+  --ios-grey-bubble: #e9e9eb;
+  --ios-secondary: #8e8e93;
+  --ios-separator: #d1d1d6;
+  --ios-bar: rgba(246, 246, 248, 0.94);
+  --ios-keyboard: #d4d7dd;
+  --screen: #ffffff;
+
+  --font-ui: 'Schibsted Grotesk', system-ui, sans-serif;
+  /* iPhones/Macs get Apple's own system font; everyone else gets Inter */
+  --font-ios: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import PracticeView from '../views/PracticeView.vue'
 import { auth } from '@/firebase'
 import { authReady, onSessionLost } from '@/auth/useAuth'
 
@@ -16,9 +16,14 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      // Until the real home page exists, send visitors to the practice page.
       path: '/',
-      name: 'home',
-      component: HomeView,
+      redirect: '/practice',
+    },
+    {
+      path: '/practice',
+      name: 'practice',
+      component: PracticeView,
     },
     {
       path: '/about',
