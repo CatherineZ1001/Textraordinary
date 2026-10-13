@@ -1,0 +1,127 @@
+/* Shared styles for the sign-in, sign-up and account pages. */
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background-soft);
+}
+
+.auth-card h1 {
+  margin-bottom: 1.25rem;
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--color-heading);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.auth-form input {
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-hover);
+  border-radius: 6px;
+}
+
+.auth-form input:focus {
+  outline: 2px solid hsla(160, 100%, 37%, 0.6);
+  outline-offset: 1px;
+}
+
+.btn {
+  padding: 0.6rem 1rem;
+  font: inherit;
+  font-weight: 500;
+  color: #fff;
+  background: hsla(160, 100%, 30%, 1);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.btn-secondary {
+  color: var(--color-text);
+  background: var(--color-background);
+  border-color: var(--color-border-hover);
+}
+
+.auth-divider {
+  margin: 1rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.auth-links {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.alert {
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.alert-error {
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fda29b;
+}
+
+.alert-info {
+  color: #175cd3;
+  background: #eff8ff;
+  border: 1px solid #b2ddff;
+}
+
+.alert-success {
+  color: #067647;
+  background: #ecfdf3;
+  border: 1px solid #abefc6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .alert-error {
+    color: #fda29b;
+    background: #3b1210;
+    border-color: #7a271a;
+  }
+
+  .alert-info {
+    color: #b2ddff;
+    background: #102a43;
+    border-color: #1849a9;
+  }
+
+  .alert-success {
+    color: #abefc6;
+    background: #0b2e1e;
+    border-color: #085d3a;
+  }
+}

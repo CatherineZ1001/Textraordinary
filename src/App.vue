@@ -1,6 +1,20 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { useAuth } from '@/auth/useAuth'
+import { toAuthMessage } from '@/auth/errors'
+
+const router = useRouter()
+const { user, ready, logout } = useAuth()
+
+async function signOut() {
+  try {
+    await logout()
+    await router.push({ name: 'login' })
+  } catch (err) {
+    const message = toAuthMessage(err)
+    if (message) alert(message)
+  }
+}
 </script>
 
 <template>
@@ -8,16 +22,29 @@ import HelloWorld from './components/HelloWorld.vue'
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <h1 class="brand green">Textraordinary</h1>
 
-      <nav>
+      <nav v-if="ready">
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <template v-if="user">
+          <RouterLink to="/dashboard">Dashboard</RouterLink>
+          <RouterLink to="/profile">Profile</RouterLink>
+          <button
+            class="nav-signout"
+            type="button"
+            :title="user.email ?? undefined"
+            @click="signOut"
+          >
+            Sign out
+          </button>
+        </template>
+        <RouterLink v-else to="/login">Sign in</RouterLink>
       </nav>
     </div>
   </header>
 
-  <RouterView />
+  <RouterView v-if="ready" />
 </template>
 
 <style scoped>
@@ -29,6 +56,21 @@ header {
 .logo {
   display: block;
   margin: 0 auto 2rem;
+}
+
+.brand {
+  font-size: 2.6rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.nav-signout {
+  font: inherit;
+  color: hsla(160, 100%, 37%, 1);
+  background: none;
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  cursor: pointer;
 }
 
 nav {
@@ -46,7 +88,8 @@ nav a.router-link-exact-active:hover {
   background-color: transparent;
 }
 
-nav a {
+nav a,
+.nav-signout {
   display: inline-block;
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
@@ -65,6 +108,10 @@ nav a:first-of-type {
 
   .logo {
     margin: 0 2rem 0 0;
+  }
+
+  .brand {
+    text-align: left;
   }
 
   header .wrapper {
