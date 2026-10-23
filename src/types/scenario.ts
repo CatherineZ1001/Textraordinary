@@ -2,7 +2,7 @@
 // PBI 02 (loading scenarios from Firestore) should return objects in this shape,
 // or convert Firestore documents into it, so the conversation page works unchanged.
 
-export type ScenarioCategory = 'professional' | 'friendly' | 'high-stakes' | 'romantic' | 'family'
+export type ScenarioCategory = 'professional' | 'friendly' | 'romantic' | 'family'
 
 export interface ScenarioMessage {
   id: string
