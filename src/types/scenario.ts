@@ -16,10 +16,24 @@ export interface ScenarioMessage {
 export interface ScenarioOption {
   id: string
   text: string
+  /** The contact's reply when the user sends this option; played before the next round */
+  reaction?: string
+}
+
+/** One decision in a scenario: messages to read, then a reply to send */
+export interface ScenarioRound {
+  /** Played before the user replies; the last one is from 'them' */
+  messages: ScenarioMessage[]
+  /** Suggested replies for "Pick a reply" mode */
+  options: ScenarioOption[]
+  /** Used for grading (PBI 07); never shown in the UI */
+  correctOptionId?: string
 }
 
 export interface Scenario {
   id: string
+  /** Sort position in scenario lists (lowest first) */
+  order?: number
   title: string
   category: ScenarioCategory
   /** The tone the user should aim for, e.g. "Polite and professional" */
@@ -28,11 +42,8 @@ export interface Scenario {
   context: string
   /** Who the user is texting; shown in the phone header and notification */
   contact?: { name: string; role?: string }
-  messages: ScenarioMessage[]
-  /** Suggested replies for "Pick a reply" mode */
-  options: ScenarioOption[]
-  /** Used for grading later (PBI 07); never shown in the UI */
-  correctOptionId?: string
+  /** The conversation, one decision per round; message ids are unique across rounds */
+  rounds: ScenarioRound[]
 }
 
 /** 'choose' = pick a suggested reply (Epic SR), 'write' = type your own (Epic CR) */

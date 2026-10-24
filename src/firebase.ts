@@ -5,6 +5,7 @@ import {
   GoogleAuthProvider,
   initializeAuth,
 } from 'firebase/auth'
+import { getFirestore } from 'firebase/firestore'
 
 const env = import.meta.env
 
@@ -27,6 +28,8 @@ if (missing.length > 0) {
 }
 
 export const app = initializeApp(firebaseConfig)
+
+export const db = getFirestore(app)
 
 // Session persistence: the sign-in survives page reloads but is cleared when the tab or browser closes.
 export const auth = initializeAuth(app, {

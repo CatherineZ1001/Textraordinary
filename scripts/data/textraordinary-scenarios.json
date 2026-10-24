@@ -2,251 +2,1281 @@
   {
     "id": "sc-001",
     "order": 1,
-    "title": "Asking your manager for more time",
+    "title": "Negotiating a same-day interview time",
     "category": "professional",
-    "tone": "Polite and professional",
-    "context": "You're two days from a project deadline and a teammate is out sick. Your manager just messaged to check on progress.",
-    "contact": { "name": "Jordan", "role": "Manager" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "Hey! Just checking in. Are we still on track for Friday?", "time": "10:42 AM" },
-      { "id": "m2", "sender": "me", "text": "Hi Jordan, thanks for checking in.", "time": "10:44 AM" },
-      { "id": "m3", "sender": "them", "text": "Great. Let me know if anything comes up.", "time": "10:45 AM" }
-    ],
-    "options": [
-      { "id": "a", "text": "Honestly no, Sam is out and there's no way we finish by Friday." },
-      { "id": "b", "text": "Actually, one thing came up. Sam is out sick, so we may need until Tuesday. I can send a plan for what will be ready by Friday." },
-      { "id": "c", "text": "Yep, all good! 👍" },
-      { "id": "d", "text": "Can we talk later? Kind of busy right now." }
-    ],
-    "correctOptionId": "b"
+    "tone": "Clear and professional",
+    "context": "You're interested in the role. You're in class until 2 today, then free for a ten-minute call from 2:30 to 3. You can take a phone call but cannot use video on campus.",
+    "contact": {
+      "name": "Amara",
+      "role": "Recruiter"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "Could you do a ten-minute interview at 1 today? I'm filling the last slots now.",
+            "time": "12:10 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'm in class until 2. Could we do a ten-minute call between 2:30 and 3?",
+            "reaction": "I can check the later slots."
+          },
+          {
+            "id": "b",
+            "text": "I should be able to squeeze in 1. I'll work around class somehow.",
+            "reaction": "I'll pencil that in, though I need a firm time soon."
+          },
+          {
+            "id": "c",
+            "text": "I'm interested! Let me get back to you sometime this afternoon.",
+            "reaction": "The slots may be filled by then."
+          },
+          {
+            "id": "d",
+            "text": "I can't just drop everything for a last-minute interview.",
+            "reaction": "I was checking availability; another time may be possible."
+          }
+        ],
+        "correctOptionId": "a"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "I can offer 2:40 instead. Would you prefer phone or video?",
+            "time": "12:13 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "Either works, although I might have trouble getting video to connect.",
+            "reaction": "I'll mark video for now; we can revisit the connection if needed."
+          },
+          {
+            "id": "b",
+            "text": "2:40 works. A phone call would be best for me.",
+            "reaction": "Phone at 2:40 it is. I'll call you then."
+          },
+          {
+            "id": "c",
+            "text": "I've already explained my schedule. Just pick something.",
+            "reaction": "I'll send the available format in the confirmation."
+          },
+          {
+            "id": "d",
+            "text": "I'm so sorry I can't make a normal interview work. I hope this hasn't ruined my chances.",
+            "reaction": "I'll send the scheduling details; there's no need to judge your chances here."
+          }
+        ],
+        "correctOptionId": "b"
+      }
+    ]
   },
   {
     "id": "sc-002",
     "order": 2,
-    "title": "Taking a same-day recruiter call",
+    "title": "Declining coverage while protecting your privacy",
     "category": "professional",
-    "tone": "Clear and professional",
-    "context": "You're interested in the role and free for a ten-minute phone call at 2 today. You already have the role description and don't need any details before confirming.",
-    "contact": { "name": "Amara", "role": "Recruiter" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "A slot opened up at 2 today for a ten-minute call. Can you take it? I'm filling the schedule now.", "time": "12:15 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "Yes, I'm available at 2 today. I look forward to speaking with you." },
-      { "id": "b", "text": "I'm interested! I'll check my afternoon and get back to you when I can." },
-      { "id": "c", "text": "I can make 2 work, but could you send the role description and a list of questions before I confirm?" },
-      { "id": "d", "text": "I guess I can squeeze it in if that's the only time you have." }
-    ],
-    "correctOptionId": "a"
+    "tone": "Courteous and firm",
+    "context": "You have an appointment from 4 to 6 today and can't cover any part of a shift then. You prefer to keep the appointment private. Your manager is finding coverage before 3.",
+    "contact": {
+      "name": "Luis",
+      "role": "Manager"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "Can you cover 4 to 6 today? I need to settle coverage before 3.",
+            "time": "2:05 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I might be able to. Don't rule me out yet.",
+            "reaction": "I'll keep you as a possibility for now."
+          },
+          {
+            "id": "b",
+            "text": "I'm sorry, I know I'm a disappointment when the team needs me.",
+            "reaction": "I'm just trying to find coverage."
+          },
+          {
+            "id": "c",
+            "text": "I can't cover 4 to 6; I have an appointment then.",
+            "reaction": "Thanks for letting me know where things stand."
+          },
+          {
+            "id": "d",
+            "text": "I guess I'll cancel my appointment and come in.",
+            "reaction": "I'll put your name down provisionally."
+          }
+        ],
+        "correctOptionId": "c"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "Before I finalize anything, what kind of appointment is it? Could it be moved?",
+            "time": "2:08 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'd rather not explain, but maybe I can rearrange it if you're really stuck.",
+            "reaction": "I'll leave coverage open while you consider that."
+          },
+          {
+            "id": "b",
+            "text": "I don't ask you to account for every hour of your day.",
+            "reaction": "I'll look for coverage elsewhere. Let's leave this here."
+          },
+          {
+            "id": "c",
+            "text": "I have a contagious illness, so you definitely don't want me there.",
+            "reaction": "I'll take you off the coverage list based on that."
+          },
+          {
+            "id": "d",
+            "text": "I need to keep the appointment and prefer to keep the details private. I'm unavailable for this shift.",
+            "reaction": "Understood. I'll find someone else for 4 to 6."
+          }
+        ],
+        "correctOptionId": "d"
+      }
+    ]
   },
   {
     "id": "sc-003",
     "order": 3,
-    "title": "Declining a last-minute shift",
+    "title": "Checking a figure before a client call",
     "category": "professional",
-    "tone": "Courteous and firm",
-    "context": "You have a required lab from 4 to 7 today and cannot cover any part of a shift during that time. Your manager is finding coverage before the shift begins.",
-    "contact": { "name": "Luis", "role": "Manager" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "Any chance you can cover 4 to 7 today? I'm short a person and need to sort it out before 3.", "time": "2:10 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I can probably do it. I'll see if I can get out of my lab." },
-      { "id": "b", "text": "I can't cover 4 to 7; I have a required lab then. Thanks for checking with me." },
-      { "id": "c", "text": "I'm so sorry. I feel awful letting everyone down, and I hope this doesn't make you regret hiring me." },
-      { "id": "d", "text": "I have classes too, you know. I can't keep being your backup plan." }
-    ],
-    "correctOptionId": "b"
+    "tone": "Calm and collaborative",
+    "context": "You're joining a client call at 11. You have the presentation open and can check one figure now. The source sheet lists 240 signups for June; you haven't yet checked which figure your coworker means.",
+    "contact": {
+      "name": "Mei",
+      "role": "Coworker"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "That signup number still looks off. We can't show it like this at 11.",
+            "time": "10:50 AM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "Which slide and month do you mean? I can check it now.",
+            "reaction": "Thanks, let's pin it down."
+          },
+          {
+            "id": "b",
+            "text": "I'm sure it's fine. I copied everything from the sheet.",
+            "reaction": "I'd still like us to check the specific figure."
+          },
+          {
+            "id": "c",
+            "text": "I used your data, so I don't see why this is my problem.",
+            "reaction": "I'm trying to get the deck accurate before the call."
+          },
+          {
+            "id": "d",
+            "text": "I'll redo the whole deck before 11.",
+            "reaction": "We only have a few minutes; let's narrow it down."
+          }
+        ],
+        "correctOptionId": "a"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "Slide 4 says June had 420 signups. Can you confirm the source value before I change it?",
+            "time": "10:53 AM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'd use whichever number makes the slide look more consistent.",
+            "reaction": "I'll verify it myself before changing anything."
+          },
+          {
+            "id": "b",
+            "text": "The source sheet says 240 for June. Please change slide 4 to 240.",
+            "reaction": "Thanks. I'll update slide 4 now; we're set for the call."
+          },
+          {
+            "id": "c",
+            "text": "I think it's probably 240, but let's not commit to anything.",
+            "reaction": "I'll open the source sheet and check before the call."
+          },
+          {
+            "id": "d",
+            "text": "I knew this would happen if we rushed. Nobody listens when I say we need more time.",
+            "reaction": "I'll verify the number now. We'll leave the process discussion for later."
+          }
+        ],
+        "correctOptionId": "b"
+      }
+    ]
   },
   {
     "id": "sc-004",
     "order": 4,
-    "title": "Clarifying feedback before a client call",
+    "title": "Handling a delayed interviewer",
     "category": "professional",
-    "tone": "Calm and collaborative",
-    "context": "You're joining a client call at 11. Your coworker's comment doesn't identify which slide needs attention. You have the deck open and can check one slide before the call.",
-    "contact": { "name": "Mei", "role": "Coworker" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "That number still looks off. We can't show it like this at 11.", "time": "10:52 AM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I used the figures you sent, so I'm not sure why this is on me now." },
-      { "id": "b", "text": "I'll redo all the figures before 11. That should cover whatever you're seeing." },
-      { "id": "c", "text": "Which slide and number do you mean? I have the deck open and can check it now." },
-      { "id": "d", "text": "I think it looks fine. Let's just explain it if the client asks." }
-    ],
-    "correctOptionId": "c"
+    "tone": "Flexible and direct",
+    "context": "Your interview was set for 3. You can stay until 3:30, but a required class prevents staying later. You would rather preserve the full interview than rush it, and you're free tomorrow from 10 to noon.",
+    "contact": {
+      "name": "Kwame",
+      "role": "Interviewer"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "I'm running 15 minutes behind. Could we start at 3:15 instead?",
+            "time": "2:55 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "No problem, I can stay as long as you need.",
+            "reaction": "Thanks, I'll aim for 3:15."
+          },
+          {
+            "id": "b",
+            "text": "I'll wait and see how long this takes.",
+            "reaction": "I'll update you as soon as I'm free."
+          },
+          {
+            "id": "c",
+            "text": "I can start at 3:15, but I have to leave at 3:30 for class. Would that leave enough time?",
+            "reaction": "Thanks for flagging your end time."
+          },
+          {
+            "id": "d",
+            "text": "I arranged my day around this, so a delay really isn't acceptable.",
+            "reaction": "I understand the timing matters. I'll check the alternatives."
+          }
+        ],
+        "correctOptionId": "c"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "We need 30 minutes, so let's reschedule rather than rush. Are you free tomorrow morning?",
+            "time": "2:58 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "Whatever works for you. I'll move things around.",
+            "reaction": "I'll send a proposed time for you to review."
+          },
+          {
+            "id": "b",
+            "text": "I can try, but I don't want to give a definite time.",
+            "reaction": "I'll send the scheduling link so you can choose later."
+          },
+          {
+            "id": "c",
+            "text": "I suppose tomorrow is fine if the appointment actually starts on time.",
+            "reaction": "I'll send the available times in a separate message."
+          },
+          {
+            "id": "d",
+            "text": "I'm available tomorrow from 10 to noon. What time works for you?",
+            "reaction": "I'll send an invitation for 10:30 tomorrow. Thanks for working with me."
+          }
+        ],
+        "correctOptionId": "d"
+      }
+    ]
   },
   {
     "id": "sc-005",
     "order": 5,
-    "title": "Passing on dinner without holding up friends",
+    "title": "Choosing a dinner plan within your budget",
     "category": "friendly",
-    "tone": "Warm and direct",
-    "context": "You're finishing an assignment and won't be free until 8. Your friends are leaving for dinner at 6:30. You want them to go ahead without waiting for you.",
-    "contact": { "name": "Priya", "role": "Friend" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "We're heading out in five. Are you coming, or should we stop saving you a seat?", "time": "6:25 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I'm still working, but maybe! Can you keep the seat for a bit?" },
-      { "id": "b", "text": "I love how I'm suddenly an inconvenience just because I have work." },
-      { "id": "c", "text": "I'll skip it. I guess you all have more fun when I'm not there anyway." },
-      { "id": "d", "text": "I'll sit this one out; I'm working until 8. Go ahead and have fun!" }
-    ],
-    "correctOptionId": "d"
+    "tone": "Warm and honest",
+    "context": "You want to see your friends tonight, but your dinner budget is $15. You can join them at the park at 7 after their restaurant meal. Your friend is booking the table now.",
+    "contact": {
+      "name": "Priya",
+      "role": "Friend"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "We're booking the set-menu place. It's $35 each. Should I count you in?",
+            "time": "5:15 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'd love to see you, but $35 is outside my budget. I'll skip the meal and join you at the park at 7.",
+            "reaction": "Got it, I'll keep the dinner booking separate."
+          },
+          {
+            "id": "b",
+            "text": "Sure, count me in. I'll figure out the money later.",
+            "reaction": "Okay, I'll include you in the booking."
+          },
+          {
+            "id": "c",
+            "text": "Must be nice to have $35 to throw away on dinner.",
+            "reaction": "We can have different budgets without judging each other."
+          },
+          {
+            "id": "d",
+            "text": "Maybe! Save me a place while I think about it.",
+            "reaction": "I'll hold off briefly, but the booking needs a number."
+          }
+        ],
+        "correctOptionId": "a"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "I could lend you the difference if that helps. Want me to?",
+            "time": "5:18 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I guess I'll borrow it, though I don't know when I could repay you.",
+            "reaction": "Let's leave the loan for now; I don't want money getting awkward."
+          },
+          {
+            "id": "b",
+            "text": "Thanks for offering, but I'd rather stick to my budget. I'll see you at the park at 7.",
+            "reaction": "Sounds good. See you at 7!"
+          },
+          {
+            "id": "c",
+            "text": "I didn't ask for charity. Forget it.",
+            "reaction": "I meant it as an offer. I'll leave it there."
+          },
+          {
+            "id": "d",
+            "text": "I'll let you know after you book.",
+            "reaction": "I'll book without you so the restaurant has a firm count. Catch you later."
+          }
+        ],
+        "correctOptionId": "b"
+      }
+    ]
   },
   {
     "id": "sc-006",
     "order": 6,
-    "title": "Responding to a roommate's kitchen complaint",
+    "title": "Sharing the kitchen before a video call",
     "category": "friendly",
-    "tone": "Accountable and considerate",
-    "context": "You left your pan and dishes in the sink. You're home and can wash them now. Your roommate needs the sink to cook dinner, and you want to resolve the immediate problem.",
-    "contact": { "name": "Omar", "role": "Roommate" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "Is the sink just permanently yours now? I'm trying to make dinner.", "time": "7:05 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "Those are mine, sorry. I'll wash them now so you can cook." },
-      { "id": "b", "text": "I was going to wash them. You don't need to talk to me like I'm a child." },
-      { "id": "c", "text": "I know they're in the way. I'll try to deal with them sometime tonight." },
-      { "id": "d", "text": "I'm the worst roommate. I feel terrible that you have to put up with me." }
-    ],
-    "correctOptionId": "a"
+    "tone": "Accountable and cooperative",
+    "context": "You left a pan and dishes blocking the sink. You're home and can wash them now. Your video call starts in ten minutes, so you can clear the sink but can't stay to chat afterward.",
+    "contact": {
+      "name": "Omar",
+      "role": "Roommate"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "Is the sink permanently yours now? I need to make dinner.",
+            "time": "6:20 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I was going to wash them. You don't need to start with the attitude.",
+            "reaction": "I'm frustrated because I can't use the sink."
+          },
+          {
+            "id": "b",
+            "text": "I'm sorry. I'll try to get to them later tonight.",
+            "reaction": "That still leaves me stuck right now."
+          },
+          {
+            "id": "c",
+            "text": "Those are mine, sorry. I'll wash them now so you can cook.",
+            "reaction": "Thanks, that would help."
+          },
+          {
+            "id": "d",
+            "text": "I'm clearly impossible to live with. I feel awful about everything.",
+            "reaction": "I just need room to cook."
+          }
+        ],
+        "correctOptionId": "c"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "One more thing: can we talk through a kitchen schedule after the sink is clear?",
+            "time": "6:23 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'll stay as long as it takes. The call can wait.",
+            "reaction": "Let's leave the schedule for another time; I don't want you missing your call."
+          },
+          {
+            "id": "b",
+            "text": "I cleaned up, so I don't see why we need a whole conversation.",
+            "reaction": "I'd still like to discuss a routine later. I'll start dinner now."
+          },
+          {
+            "id": "c",
+            "text": "I'll get back to you about that at some point.",
+            "reaction": "Okay. We still need to find a time; I'll leave you to your evening."
+          },
+          {
+            "id": "d",
+            "text": "I'd like to sort that out. My call starts in ten minutes; can we find a time afterward?",
+            "reaction": "Sure. Let's compare availability after your call. I'll get dinner started."
+          }
+        ],
+        "correctOptionId": "d"
+      }
+    ]
   },
   {
     "id": "sc-007",
     "order": 7,
-    "title": "Clearing up a friend's worry",
+    "title": "Clearing up a missed invitation",
     "category": "friendly",
-    "tone": "Reassuring with boundaries",
-    "context": "You're not upset with your friend; you've been studying. Your study session ends at 9, when you're available and want to call. You can't have a longer conversation before then.",
-    "contact": { "name": "Nia", "role": "Friend" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "Your replies have been really short today. Did I do something?", "time": "7:20 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I'm studying. I can't explain every short reply I send." },
-      { "id": "b", "text": "I'm not upset with you, just studying. I'd like to call at 9 if you're free." },
-      { "id": "c", "text": "I can call now. I don't want you worrying, so I'll stop studying." },
-      { "id": "d", "text": "I'll call at 9 and we can talk about it then." }
-    ],
-    "correctOptionId": "b"
+    "tone": "Curious and considerate",
+    "context": "You didn't see an invitation to your classmate's study session and don't know whether you were included. You want to join if it's open, and you're free at 4. You haven't checked the class group chat today.",
+    "contact": {
+      "name": "Nia",
+      "role": "Classmate"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "We're meeting at 4. Didn't think you'd want to come, honestly.",
+            "time": "3:30 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'd like to join. I didn't see an invite; is this open to me too?",
+            "reaction": "Let me clear up how the invite went out."
+          },
+          {
+            "id": "b",
+            "text": "I see how it is. You could just say you don't want me there.",
+            "reaction": "That's not what I said; there's been a mix-up."
+          },
+          {
+            "id": "c",
+            "text": "I'm busy anyway, so it doesn't matter.",
+            "reaction": "Okay, I took your message to mean you weren't coming."
+          },
+          {
+            "id": "d",
+            "text": "I'll show up. You don't get to decide whether I want to come.",
+            "reaction": "I wasn't trying to make the decision for you."
+          }
+        ],
+        "correctOptionId": "a"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "It's open to you. I posted in the class group chat and assumed you'd seen it. Can you make 4?",
+            "time": "3:33 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I can, but you should have invited me personally if you meant it.",
+            "reaction": "I'll leave you to decide whether to join. We're starting at 4."
+          },
+          {
+            "id": "b",
+            "text": "Yes, I can make 4. I hadn't checked the chat today; thanks for clearing that up.",
+            "reaction": "Great, see you at 4!"
+          },
+          {
+            "id": "c",
+            "text": "Maybe. I'll decide when I feel like checking the chat.",
+            "reaction": "Okay, we'll start at 4 either way. Catch you later."
+          },
+          {
+            "id": "d",
+            "text": "I'm so sorry. I'm terrible at keeping up and probably not worth including.",
+            "reaction": "You're welcome to come. I'll head over and get set up now."
+          }
+        ],
+        "correctOptionId": "b"
+      }
+    ]
   },
   {
     "id": "sc-008",
     "order": 8,
-    "title": "Keeping a date in a public place",
-    "category": "romantic",
-    "tone": "Friendly and firm",
-    "context": "You're meeting someone for a first date at a cafe at 7. You want to meet in public and are still happy to meet at the cafe. You don't want to go to their apartment tonight.",
-    "contact": { "name": "Ravi", "role": "First date" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "Want to skip the cafe and come to my place instead? I'm about to head out, so let me know.", "time": "6:20 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I guess your place is fine if you'd rather stay in." },
-      { "id": "b", "text": "I'm not sure. Maybe head out and I'll decide on the way?" },
-      { "id": "c", "text": "I'd prefer to meet in public. I'm still up for the cafe at 7!" },
-      { "id": "d", "text": "I can already tell what you're after if you're changing the plan like this." }
-    ],
-    "correctOptionId": "c"
+    "title": "Fixing a mix-up before a group presentation",
+    "category": "friendly",
+    "tone": "Direct and collaborative",
+    "context": "Your group presents at 2. Your notes assign you the introduction and your teammate the results. You can present either section from the shared slides, but need to agree before walking into class.",
+    "contact": {
+      "name": "Mateo",
+      "role": "Teammate"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "You're doing the results, right? I'm about to practice the intro.",
+            "time": "1:45 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I guess so. I won't say anything if that's what you remember.",
+            "reaction": "I'll keep practicing the intro for now."
+          },
+          {
+            "id": "b",
+            "text": "You always change the plan when it's too late to argue.",
+            "reaction": "I thought this was the plan; let's check."
+          },
+          {
+            "id": "c",
+            "text": "My notes have me on the intro and you on results. Can we check before we practice?",
+            "reaction": "Yes, let's settle it before class."
+          },
+          {
+            "id": "d",
+            "text": "I'm only doing the intro. You'll have to work the rest out.",
+            "reaction": "We still need to make sure both sections are covered."
+          }
+        ],
+        "correctOptionId": "c"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "I checked: your notes are right. I'm less confident with results, though. Could we swap?",
+            "time": "1:48 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'll take both sections so we don't have to deal with this.",
+            "reaction": "Let's keep two speakers. I'll stick to the original split today."
+          },
+          {
+            "id": "b",
+            "text": "I'll swap, but everyone should know you weren't prepared.",
+            "reaction": "Let's keep the original split rather than make this personal. See you inside."
+          },
+          {
+            "id": "c",
+            "text": "I don't care. Just start talking and I'll jump in wherever.",
+            "reaction": "I'll use the original split so we have a clear order. See you in class."
+          },
+          {
+            "id": "d",
+            "text": "I can take results if you take the intro. Let's use that split today.",
+            "reaction": "Deal. I'll cover the intro and hand over to you for results. See you inside."
+          }
+        ],
+        "correctOptionId": "d"
+      }
+    ]
   },
   {
     "id": "sc-009",
     "order": 9,
-    "title": "Turning down a second date kindly",
+    "title": "Keeping a first date in a public place",
     "category": "romantic",
-    "tone": "Kind and unambiguous",
-    "context": "You enjoyed talking on your first date but don't want another romantic date. The other person is waiting for your answer before reserving tickets for tomorrow.",
-    "contact": { "name": "Elena", "role": "Recent date" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "Tickets are still available for tomorrow. Should I grab two for us?", "time": "5:40 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I can't tomorrow, but maybe another time!" },
-      { "id": "b", "text": "I don't want to go. I didn't find you attractive on our date." },
-      { "id": "c", "text": "I'll go if you really want me to. I'd feel bad making you go alone." },
-      { "id": "d", "text": "I enjoyed talking with you, but I don't feel a romantic connection. I'll pass on another date." }
-    ],
-    "correctOptionId": "d"
+    "tone": "Friendly and firm",
+    "context": "You're meeting someone for a first date at a cafe at 7. You want to meet in public and won't visit their apartment tonight. You can also meet at the public square beside the cafe at 7.",
+    "contact": {
+      "name": "Ravi",
+      "role": "First date"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "Want to skip the cafe and come to my place? I'm deciding whether to head out.",
+            "time": "6:15 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'd prefer to meet in public. I'm still happy to meet at the cafe at 7.",
+            "reaction": "I hear you on meeting in public."
+          },
+          {
+            "id": "b",
+            "text": "I guess your place is okay if that's easier for you.",
+            "reaction": "Okay, I'll stay home for now."
+          },
+          {
+            "id": "c",
+            "text": "Maybe. Start getting ready and I'll decide later.",
+            "reaction": "I'll hold off on leaving until we settle the place."
+          },
+          {
+            "id": "d",
+            "text": "I know exactly what you're trying to do by inviting me over.",
+            "reaction": "I wasn't trying to have my intentions decided for me."
+          }
+        ],
+        "correctOptionId": "a"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "Just saw the cafe closes at 7 today. How about the public square beside it, still at 7?",
+            "time": "6:18 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I suppose your apartment makes more sense now.",
+            "reaction": "Let's pause tonight; we haven't settled on a place you're comfortable with."
+          },
+          {
+            "id": "b",
+            "text": "The square at 7 works for me. See you there!",
+            "reaction": "Great, see you at the square at 7."
+          },
+          {
+            "id": "c",
+            "text": "I'll wander around and text you when I get bored.",
+            "reaction": "Let's leave it for another day rather than meet without a plan. Have a good evening."
+          },
+          {
+            "id": "d",
+            "text": "I'll come, but this is already more complicated than a first date should be.",
+            "reaction": "Let's leave tonight there. Take care."
+          }
+        ],
+        "correctOptionId": "b"
+      }
+    ]
   },
   {
     "id": "sc-010",
     "order": 10,
-    "title": "Acknowledging a partner before an exam",
+    "title": "Declining another date without mixed signals",
     "category": "romantic",
-    "tone": "Caring and boundaried",
-    "context": "Your partner is right that you checked your phone during dinner. You want to hear how it affected them, but your exam begins at 6. You're free to talk at 8 tonight.",
-    "contact": { "name": "Theo", "role": "Partner" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "I felt pretty ignored when you kept checking your phone at dinner.", "time": "5:45 PM" },
-      { "id": "m2", "sender": "them", "text": "Can we talk about it now?", "time": "5:46 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I'm sorry I kept checking my phone. I want to hear you out. My exam starts at 6; can we talk at 8?" },
-      { "id": "b", "text": "I have an exam. I can't deal with this right now." },
-      { "id": "c", "text": "I was only checking it for a few seconds at a time. I think you're making dinner sound worse than it was." },
-      { "id": "d", "text": "I'm sorry you felt ignored. I'll keep texting through the exam so we can settle this tonight." }
-    ],
-    "correctOptionId": "a"
+    "tone": "Kind and unambiguous",
+    "context": "You enjoyed talking on your first date but don't want another romantic date. You also don't want to arrange a friendship meetup. The other person is deciding whether to buy tickets for tomorrow.",
+    "contact": {
+      "name": "Elena",
+      "role": "Recent date"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "Tickets are still available for tomorrow. Should I grab two for us?",
+            "time": "5:35 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "Tomorrow's busy, but maybe we could do another night.",
+            "reaction": "I'll hold off on tickets for now."
+          },
+          {
+            "id": "b",
+            "text": "I didn't feel attracted to you, so I don't see the point.",
+            "reaction": "That's hard to read, but I understand you're declining."
+          },
+          {
+            "id": "c",
+            "text": "I enjoyed talking, but I don't feel a romantic connection. I'll pass on another date.",
+            "reaction": "Thanks for being clear with me."
+          },
+          {
+            "id": "d",
+            "text": "I could go if you really want me to. I don't want you feeling rejected.",
+            "reaction": "I don't want you coming out of obligation."
+          }
+        ],
+        "correctOptionId": "c"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "Would you want to go just as friends instead? No pressure.",
+            "time": "5:38 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "Maybe, though I don't really see us hanging out.",
+            "reaction": "I'll leave the invitation there and make other plans."
+          },
+          {
+            "id": "b",
+            "text": "I don't owe you friendship just because we had one date.",
+            "reaction": "Understood. I'll leave it there."
+          },
+          {
+            "id": "c",
+            "text": "I'll go as friends so this doesn't end on a bad note.",
+            "reaction": "Let's skip it if that's the reason. Take care."
+          },
+          {
+            "id": "d",
+            "text": "Thanks for offering, but I don't want to plan another meetup. I wish you well.",
+            "reaction": "Understood. Wishing you well too."
+          }
+        ],
+        "correctOptionId": "d"
+      }
+    ]
   },
   {
     "id": "sc-011",
     "order": 11,
-    "title": "Updating a parent waiting for pickup",
-    "category": "family",
-    "tone": "Considerate and specific",
-    "context": "Your dad is picking you up after a campus event. The event ran late, and you can reach the east entrance at 6:20. You haven't yet told him about the delay.",
-    "contact": { "name": "Daniel", "role": "Dad" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "I'm at the east entrance. Are you coming out? I can't stay in this pickup lane long.", "time": "6:10 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I'm coming soon! Just hang on a little longer." },
-      { "id": "b", "text": "Sorry, the event ran late. I'll reach the east entrance at 6:20. Where can you wait until then?" },
-      { "id": "c", "text": "I'm walking out now. I'll be there in a minute." },
-      { "id": "d", "text": "I didn't make the event run late. You should have checked before driving over." }
-    ],
-    "correctOptionId": "b"
+    "title": "Making room for a partner's concern",
+    "category": "romantic",
+    "tone": "Caring and accountable",
+    "context": "You kept checking your phone during dinner and want to hear how that affected your partner. Your exam starts at 6; you're free to talk at 8. You can put your phone away during future dinners.",
+    "contact": {
+      "name": "Theo",
+      "role": "Partner"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "I felt ignored when you kept checking your phone at dinner. Can we talk now?",
+            "time": "5:45 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'm sorry I kept checking it. I want to hear you out, but my exam starts at 6. Can we talk at 8?",
+            "reaction": "Thanks for acknowledging it. I hear that you have an exam."
+          },
+          {
+            "id": "b",
+            "text": "I can't deal with this before an exam.",
+            "reaction": "The timing is difficult, but this matters to me."
+          },
+          {
+            "id": "c",
+            "text": "I only checked it a few times. You're making it sound worse than it was.",
+            "reaction": "It still affected how dinner felt to me."
+          },
+          {
+            "id": "d",
+            "text": "I'll stay on text during the exam so we can settle everything.",
+            "reaction": "I don't want us trying to talk during your exam."
+          }
+        ],
+        "correctOptionId": "a"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "Let's talk at 8. For next time, could we both put our phones away at dinner?",
+            "time": "5:48 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'll never touch my phone around you again. I clearly can't get anything right.",
+            "reaction": "I mean during dinner, not all the time. Let's leave the rest for 8."
+          },
+          {
+            "id": "b",
+            "text": "Yes, I can put mine away during dinner. Let's talk at 8.",
+            "reaction": "Thanks. Good luck on your exam; talk at 8."
+          },
+          {
+            "id": "c",
+            "text": "I'll do it if you promise you won't bring tonight up again.",
+            "reaction": "I still want to talk about tonight. We'll leave that for 8."
+          },
+          {
+            "id": "d",
+            "text": "I'll think about the phone thing whenever we next go out.",
+            "reaction": "Let's come back to that at 8. I'll let you focus now."
+          }
+        ],
+        "correctOptionId": "b"
+      }
+    ]
   },
   {
     "id": "sc-012",
     "order": 12,
-    "title": "Declining a sibling's last-minute favor",
-    "category": "family",
-    "tone": "Warm but firm",
-    "context": "Your sister wants you to stay at her apartment for a delivery between 3 and 5 today. You have a required class throughout that window and can't help. She's deciding now whether to leave work early.",
-    "contact": { "name": "Hana", "role": "Sister" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "Can you wait at mine for the delivery from 3 to 5? I need to tell my boss now if I'm leaving early.", "time": "1:30 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I might be able to help. Don't tell your boss yet; I'll see how class goes." },
-      { "id": "b", "text": "I can't. Maybe try planning things before the last minute for once." },
-      { "id": "c", "text": "I can't cover 3 to 5; I have a required class. I wanted to let you know so you can arrange your afternoon." },
-      { "id": "d", "text": "I'll skip class and do it, but you owe me for this." }
-    ],
-    "correctOptionId": "c"
+    "title": "Rescheduling a date without leaving someone waiting",
+    "category": "romantic",
+    "tone": "Honest and considerate",
+    "context": "Your train is delayed, so you can't reach your 6:30 date before 7:15. You still want to meet. You're also free Saturday at 2 for the same cafe, and can confirm that plan now.",
+    "contact": {
+      "name": "Leila",
+      "role": "Second date"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "I'm about to leave for the cafe. Are we still good for 6:30?",
+            "time": "6:10 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "Yes, all good. I'll explain when I get there.",
+            "reaction": "Okay, I'll leave now."
+          },
+          {
+            "id": "b",
+            "text": "The trains are a mess. I guess you'll have to wait if you want to see me.",
+            "reaction": "I need to know the timing before I head out."
+          },
+          {
+            "id": "c",
+            "text": "My train's delayed; I can't get there before 7:15. Would that work, or should we reschedule?",
+            "reaction": "Thanks for telling me before I leave."
+          },
+          {
+            "id": "d",
+            "text": "I might be a little late. You can head over and see how it goes.",
+            "reaction": "I don't want to wait without knowing roughly how long."
+          }
+        ],
+        "correctOptionId": "c"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "I need to leave by 7, so tonight won't work. Could we try Saturday at 2 instead?",
+            "time": "6:13 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'll try to make it. Keep the afternoon open for me.",
+            "reaction": "I'll leave Saturday unconfirmed for now. Have a good evening."
+          },
+          {
+            "id": "b",
+            "text": "I could do that, but it feels like you're giving up on tonight pretty quickly.",
+            "reaction": "I have to leave at 7. Let's pause planning here for tonight."
+          },
+          {
+            "id": "c",
+            "text": "I'm sorry, this is such a disaster. I understand if you never want to see me again.",
+            "reaction": "I just meant we could move the date. I'll leave you to your journey now."
+          },
+          {
+            "id": "d",
+            "text": "Saturday at 2 works for me, same cafe. Sorry for the disruption tonight.",
+            "reaction": "Saturday at 2, same cafe. Safe trip home; see you then!"
+          }
+        ],
+        "correctOptionId": "d"
+      }
+    ]
   },
   {
     "id": "sc-013",
     "order": 13,
-    "title": "Setting a limit on family job updates",
+    "title": "Updating a parent waiting for pickup",
+    "category": "family",
+    "tone": "Considerate and specific",
+    "context": "Your dad is picking you up at the east entrance after a campus event. The event ran late; you can reach that entrance at 6:20. You're carrying a heavy display and need him to collect you at the entrance.",
+    "contact": {
+      "name": "Daniel",
+      "role": "Dad"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "I'm at the east entrance. Are you coming out? I can't stay in this pickup lane long.",
+            "time": "6:10 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "Sorry, the event ran late. I can be at the east entrance at 6:20. Can you wait somewhere nearby?",
+            "reaction": "Thanks for giving me a time. I'll move out of the lane."
+          },
+          {
+            "id": "b",
+            "text": "I'm basically there. Just stay put.",
+            "reaction": "I need to move; I can't keep blocking the lane."
+          },
+          {
+            "id": "c",
+            "text": "I didn't make it run late. You should have checked before coming.",
+            "reaction": "I'm trying to work out the pickup, not assign blame."
+          },
+          {
+            "id": "d",
+            "text": "I'll come out soon. I'm not sure what you want me to do.",
+            "reaction": "I need a clearer plan so I can move the car."
+          }
+        ],
+        "correctOptionId": "a"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "I'll wait in the side lot. Should I come back to the east entrance at 6:20, or can you walk to the lot?",
+            "time": "6:13 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'll just manage the display somehow. Go wherever you want.",
+            "reaction": "I'll stay in the side lot until you send a clear pickup point. Driveway's too busy to guess."
+          },
+          {
+            "id": "b",
+            "text": "Please come back to the east entrance at 6:20. I've got a heavy display to carry.",
+            "reaction": "Will do. East entrance at 6:20; see you then."
+          },
+          {
+            "id": "c",
+            "text": "I already told you east entrance. Why are we still discussing this?",
+            "reaction": "I'll come back there at 6:20. See you in a few minutes."
+          },
+          {
+            "id": "d",
+            "text": "Either is fine, although I can't carry this all the way to the lot.",
+            "reaction": "I'll use the east entrance at 6:20 so you don't have to carry it farther. See you there."
+          }
+        ],
+        "correctOptionId": "b"
+      }
+    ]
+  },
+  {
+    "id": "sc-014",
+    "order": 14,
+    "title": "Turning down a favor without sharing your calendar",
+    "category": "family",
+    "tone": "Warm but firm",
+    "context": "Your sister needs someone at her apartment for a delivery from 3 to 5. You have a required class then. You're free Sunday afternoon and would enjoy seeing her, but don't want her logging into your calendar.",
+    "contact": {
+      "name": "Hana",
+      "role": "Sister"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "Can you wait at mine for the delivery from 3 to 5? I need to tell my boss now if I'm leaving early.",
+            "time": "1:20 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I might be able to leave class. Wait before you tell your boss.",
+            "reaction": "I'll hold off briefly, but I need to decide soon."
+          },
+          {
+            "id": "b",
+            "text": "I can't keep fixing things you didn't plan properly.",
+            "reaction": "I asked because I'm trying to make a plan."
+          },
+          {
+            "id": "c",
+            "text": "I can't cover 3 to 5; I have a required class. I wanted you to know before you speak to your boss.",
+            "reaction": "Okay, thanks for letting me know now."
+          },
+          {
+            "id": "d",
+            "text": "I'll miss class if that's what you need me to do.",
+            "reaction": "I don't want you missing a required class for this."
+          }
+        ],
+        "correctOptionId": "c"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "I'll handle the delivery. Could you give me your calendar login so I know when you're free to hang out?",
+            "time": "1:23 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I guess I can share it, even though I'm not comfortable with that.",
+            "reaction": "Let's skip sharing it if you're uncomfortable. I'll leave you to class."
+          },
+          {
+            "id": "b",
+            "text": "I don't need you monitoring my life.",
+            "reaction": "I meant for making plans. I'll leave it there."
+          },
+          {
+            "id": "c",
+            "text": "I'll send something later. Not sure what or when.",
+            "reaction": "Okay, I'll wait to hear from you another time."
+          },
+          {
+            "id": "d",
+            "text": "I'd rather keep my login private. I'm free Sunday afternoon if you'd like to hang out.",
+            "reaction": "Sunday afternoon sounds good. Keep your login private; we'll plan by text."
+          }
+        ],
+        "correctOptionId": "d"
+      }
+    ]
+  },
+  {
+    "id": "sc-015",
+    "order": 15,
+    "title": "Keeping job-search criticism out of family dinner",
     "category": "family",
     "tone": "Calm and assertive",
-    "context": "You're actively applying for jobs and have no new results. You want to attend family dinner tonight, but don't want another group discussion of your job search. Your aunt is planning the dinner conversation now.",
-    "contact": { "name": "Farah", "role": "Aunt" },
-    "messages": [
-      { "id": "m1", "sender": "them", "text": "Any job news? We can all go through your applications at dinner. It might help to take this more seriously.", "time": "4:30 PM" }
-    ],
-    "options": [
-      { "id": "a", "text": "I have a few offers coming, so there's really no need to discuss it." },
-      { "id": "b", "text": "I guess we can go through everything if you all think I'm doing such a bad job." },
-      { "id": "c", "text": "I'll come tonight. We can see how the conversation goes." },
-      { "id": "d", "text": "I'm applying and have no news yet. I'll be at dinner, but I'd like to keep my job search off the table tonight." }
-    ],
-    "correctOptionId": "d"
+    "context": "You're applying for jobs and have no new results. You want to attend dinner tonight without a group review of your applications. You're willing to discuss something else but don't want to schedule a job-search review.",
+    "contact": {
+      "name": "Farah",
+      "role": "Aunt"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "Any job news? We can all go over your applications at dinner. Maybe you need to take this more seriously.",
+            "time": "4:20 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'm applying and have no news yet. I'll be at dinner, but I don't want a group review of my job search.",
+            "reaction": "I hear that you don't want a review tonight."
+          },
+          {
+            "id": "b",
+            "text": "I've got offers coming, so there's nothing to review.",
+            "reaction": "That sounds promising. I'll hold off on looking at applications."
+          },
+          {
+            "id": "c",
+            "text": "I guess everyone can tell me what I'm doing wrong again.",
+            "reaction": "I was trying to offer help, not start an argument."
+          },
+          {
+            "id": "d",
+            "text": "I'm not discussing my life with people who have no idea what they're talking about.",
+            "reaction": "That's hurtful. Let's slow this down."
+          }
+        ],
+        "correctOptionId": "a"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "I was trying to help. Could I at least bring it up briefly over dinner?",
+            "time": "4:23 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "Fine, briefly, as long as it doesn't turn into another whole discussion.",
+            "reaction": "I'll mention it briefly, then. See you tonight."
+          },
+          {
+            "id": "b",
+            "text": "I appreciate that you want to help. I'd still like to leave my job search out of dinner tonight.",
+            "reaction": "Okay, we'll leave it out tonight. See you at dinner."
+          },
+          {
+            "id": "c",
+            "text": "I'll just stay home if you can't control yourself.",
+            "reaction": "Let's leave this conversation here for now."
+          },
+          {
+            "id": "d",
+            "text": "I'll see how I feel once everyone starts asking.",
+            "reaction": "I'll leave it alone unless you bring it up. See you tonight."
+          }
+        ],
+        "correctOptionId": "b"
+      }
+    ]
+  },
+  {
+    "id": "sc-016",
+    "order": 16,
+    "title": "Redirecting a relative after a dinner location change",
+    "category": "family",
+    "tone": "Helpful and reassuring",
+    "context": "You're setting up a family dinner at your cousin's apartment instead of your grandmother's home because the oven there stopped working. You can text the address now, but can't take a call while carrying dishes. Dinner is at 6.",
+    "contact": {
+      "name": "Sora",
+      "role": "Uncle"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "I'm putting my shoes on. Still your grandmother's place at 6, or has someone changed it again?",
+            "time": "5:25 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "You should check the family chat. I can't keep repeating everything.",
+            "reaction": "I missed the update and wanted to check before leaving."
+          },
+          {
+            "id": "b",
+            "text": "I think it's probably the other place. Just start heading over.",
+            "reaction": "I need to know which place before I leave."
+          },
+          {
+            "id": "c",
+            "text": "It's at my cousin's apartment at 6; the oven at Grandma's stopped working. I'll text you the address now.",
+            "reaction": "Thanks, a clear address will help."
+          },
+          {
+            "id": "d",
+            "text": "Yes, Grandma's place at 6. We'll sort out the change when you get there.",
+            "reaction": "Okay, I'll get ready to head there."
+          }
+        ],
+        "correctOptionId": "c"
+      },
+      {
+        "messages": [
+          {
+            "id": "m2",
+            "sender": "them",
+            "text": "Before I leave, can you call and read me the address? I can read a text, but a call would be easier.",
+            "time": "5:28 PM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "I'll call while I carry these dishes. Hopefully I don't drop anything.",
+            "reaction": "Don't juggle the dishes and the phone. I'll wait for a text."
+          },
+          {
+            "id": "b",
+            "text": "I can't do every little thing for you. Read the text.",
+            "reaction": "I'll use a text. Let's leave it there."
+          },
+          {
+            "id": "c",
+            "text": "I'll try to call sometime. You can start driving first.",
+            "reaction": "I'll wait here until I have the address. Talk later."
+          },
+          {
+            "id": "d",
+            "text": "I can't call while carrying dishes, but I can text the address now. Would that work before you leave?",
+            "reaction": "Yes, text it over. I'll read it before setting off. See you at 6."
+          }
+        ],
+        "correctOptionId": "d"
+      }
+    ]
   }
 ]
