@@ -1,10 +1,13 @@
 // Loads scenarios from JSON files into the Firestore "scenarios" collection.
 // Usage: node scripts/seed-scenarios.mjs <file.json> [more.json ...] [--dry-run]
-//
-// Every file must hold a JSON array of scenarios (see src/types/scenario.ts, plus an `order` number).
+// Set $env:GOOGLE_APPLICATION_CREDENTIALS = "path/to/service-account.json" in PowerShell
+
+// Every file must hold a JSON array of scenarios (see src/types/scenario.ts). Each scenario has
+// one or more rounds, and every suggested reply needs a `reaction` from the contact.
 // All files are checked first; if anything is invalid, nothing is written.
 // Writing needs GOOGLE_APPLICATION_CREDENTIALS pointing at a Firebase service account key.
 // --dry-run only checks the files and needs no key.
+
 import { readFileSync } from 'node:fs'
 import { applicationDefault, initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
@@ -18,10 +21,9 @@ const FIELDS = [
   'tone',
   'context',
   'contact',
-  'messages',
-  'options',
-  'correctOptionId',
+  'rounds',
 ]
+const ROUND_FIELDS = ['messages', 'options', 'correctOptionId']
 
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
@@ -48,28 +50,50 @@ function validate(s) {
   check(isText(s.contact?.name), 'contact.name is required')
   check(s.contact?.role === undefined || isText(s.contact.role), 'contact.role must be a string')
 
-  const messages = Array.isArray(s.messages) ? s.messages : []
-  check(messages.length > 0, 'messages must be a non-empty array')
-  messages.forEach((m, i) => {
-    check(isText(m?.id), `messages[${i}].id is required`)
-    check(m?.sender === 'me' || m?.sender === 'them', `messages[${i}].sender must be "me" or "them"`)
-    check(isText(m?.text), `messages[${i}].text is required`)
+  const rounds = Array.isArray(s.rounds) ? s.rounds : []
+  check(rounds.length > 0, 'rounds must be a non-empty array')
+  const messageIds = []
+  rounds.forEach((r, ri) => {
+    const at = `rounds[${ri}]`
+    if (typeof r !== 'object' || r === null || Array.isArray(r)) {
+      errors.push(`${at} must be an object`)
+      return
+    }
+    const extraRound = Object.keys(r).filter((k) => !ROUND_FIELDS.includes(k))
+    check(extraRound.length === 0, `${at} has unknown fields: ${extraRound.join(', ')}`)
+
+    const messages = Array.isArray(r.messages) ? r.messages : []
+    check(messages.length > 0, `${at}.messages must be a non-empty array`)
+    messages.forEach((m, i) => {
+      check(isText(m?.id), `${at}.messages[${i}].id is required`)
+      check(
+        m?.sender === 'me' || m?.sender === 'them',
+        `${at}.messages[${i}].sender must be "me" or "them"`,
+      )
+      check(isText(m?.text), `${at}.messages[${i}].text is required`)
+      check(
+        m?.time === undefined || /^\d{1,2}:\d{2} [AP]M$/.test(m.time),
+        `${at}.messages[${i}].time must look like "10:42 AM"`,
+      )
+      messageIds.push(m?.id)
+    })
+    check(messages.at(-1)?.sender === 'them', `${at}: the last message must be from "them"`)
+
+    const options = Array.isArray(r.options) ? r.options : []
+    check(options.length >= 2, `${at}.options must have at least 2 entries`)
+    options.forEach((o, i) => {
+      check(isText(o?.id), `${at}.options[${i}].id is required`)
+      check(isText(o?.text), `${at}.options[${i}].text is required`)
+      check(isText(o?.reaction), `${at}.options[${i}].reaction is required`)
+    })
+    check(new Set(options.map((o) => o?.id)).size === options.length, `${at}: option ids must be unique`)
     check(
-      m?.time === undefined || /^\d{1,2}:\d{2} [AP]M$/.test(m.time),
-      `messages[${i}].time must look like "10:42 AM"`,
+      options.some((o) => o?.id === r.correctOptionId),
+      `${at}.correctOptionId must match an option id`,
     )
   })
-  check(messages.at(-1)?.sender === 'them', 'the last message must be from "them"')
-  check(new Set(messages.map((m) => m?.id)).size === messages.length, 'message ids must be unique')
-
-  const options = Array.isArray(s.options) ? s.options : []
-  check(options.length >= 2, 'options must have at least 2 entries')
-  options.forEach((o, i) => {
-    check(isText(o?.id), `options[${i}].id is required`)
-    check(isText(o?.text), `options[${i}].text is required`)
-  })
-  check(new Set(options.map((o) => o?.id)).size === options.length, 'option ids must be unique')
-  check(options.some((o) => o?.id === s.correctOptionId), 'correctOptionId must match an option id')
+  // Messages from every round end up in one thread, so their ids must not repeat across rounds
+  check(new Set(messageIds).size === messageIds.length, 'message ids must be unique across all rounds')
   return errors
 }
 

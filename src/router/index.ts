@@ -21,9 +21,21 @@ const router = createRouter({
       redirect: '/practice',
     },
     {
+      // Nested so the "Practice" nav link stays highlighted while playing a scenario
       path: '/practice',
-      name: 'practice',
-      component: PracticeView,
+      children: [
+        {
+          path: '',
+          name: 'scenarios',
+          component: () => import('../views/ScenarioListView.vue'),
+        },
+        {
+          path: ':id',
+          name: 'practice',
+          component: PracticeView,
+          props: true,
+        },
+      ],
     },
     {
       path: '/about',

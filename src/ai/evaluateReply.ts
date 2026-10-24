@@ -1,4 +1,5 @@
-import type { Scenario, ScenarioOption, SubmittedReply } from '@/types/scenario'
+import type { Scenario, ScenarioOption, ScenarioRound, SubmittedReply } from '@/types/scenario'
+import { threadBefore } from '@/data/thread'
 import { chatJson, NavigatorError } from './navigator'
 
 // Asks the AI coach to grade the reply the user just sent in a scenario.
@@ -31,7 +32,7 @@ export interface BestOption {
 }
 
 const SYSTEM_PROMPT = `You are a warm but honest texting coach in an app where people practice sending text messages.
-Grade the user's final text in the conversation. Judge it on:
+Grade the user's final text in the conversation. Earlier texts from "You" were graded separately; use them only as context. Judge it on:
 - how well it matches the tone they were asked to aim for
 - clarity: is it obvious what they mean or need?
 - honesty and ownership of the situation
@@ -65,17 +66,17 @@ If the user picked a different option, explain in "improvements" what the best o
 
 const letterOf = (index: number) => String.fromCharCode(65 + index) // 0 -> "A"
 
-/** The suggested replies, when the user picked one of them. */
-function pickedFrom(scenario: Scenario, reply: SubmittedReply): ScenarioOption[] {
-  return reply.mode === 'choose' && reply.optionId ? (scenario.options ?? []) : []
+/** The round's suggested replies, when the user picked one of them. */
+function pickedFrom(current: ScenarioRound | undefined, reply: SubmittedReply): ScenarioOption[] {
+  return reply.mode === 'choose' && reply.optionId ? (current?.options ?? []) : []
 }
 
-function optionsSection(scenario: Scenario, reply: SubmittedReply): string {
-  const options = pickedFrom(scenario, reply)
+function optionsSection(current: ScenarioRound | undefined, reply: SubmittedReply): string {
+  const options = pickedFrom(current, reply)
   if (!options.length) return ''
   const list = options.map((o, i) => `${letterOf(i)}) ${o.text}`).join('\n')
   const picked = options.findIndex((o) => o.id === reply.optionId)
-  const key = options.findIndex((o) => o.id === scenario.correctOptionId)
+  const key = options.findIndex((o) => o.id === current?.correctOptionId)
   const answerKey = key >= 0 ? `\nAnswer key: the best option is ${letterOf(key)}.` : ''
   return `
 
@@ -85,10 +86,15 @@ ${list}
 The user picked: ${letterOf(picked)}${answerKey}`
 }
 
-function buildPrompt(scenario: Scenario, reply: SubmittedReply): string {
+function buildPrompt(
+  scenario: Scenario,
+  round: number,
+  history: SubmittedReply[],
+  reply: SubmittedReply,
+): string {
   const name = scenario.contact?.name ?? 'Them'
   const who = scenario.contact?.role ? `${name} (${scenario.contact.role})` : name
-  const transcript = scenario.messages
+  const transcript = threadBefore(scenario, round, history)
     .map((m) => `${m.sender === 'them' ? name : 'You'}: ${m.text}`)
     .join('\n')
 
@@ -97,12 +103,13 @@ Category: ${scenario.category}
 Tone to aim for: ${scenario.tone}
 Situation: ${scenario.context}
 Texting with: ${who}
+Round ${round + 1} of ${scenario.rounds.length}
 
 Conversation so far:
 ${transcript}
 
 The user's reply to grade (${reply.mode === 'choose' ? 'picked from suggested replies' : 'written themselves'}):
-You: ${reply.text}${optionsSection(scenario, reply)}`
+You: ${reply.text}${optionsSection(scenario.rounds[round], reply)}`
 }
 
 const strings = (value: unknown, max: number): string[] =>
@@ -115,11 +122,11 @@ const text = (value: unknown): string => (typeof value === 'string' ? value.trim
 /** Works out the best option, trusting the scenario's answer key over the model when there is one. */
 function bestOption(
   r: Record<string, unknown>,
-  scenario: Scenario,
+  current: ScenarioRound | undefined,
   reply: SubmittedReply,
 ): BestOption | undefined {
-  const options = pickedFrom(scenario, reply)
-  let index = options.findIndex((o) => o.id === scenario.correctOptionId)
+  const options = pickedFrom(current, reply)
+  let index = options.findIndex((o) => o.id === current?.correctOptionId)
   if (index < 0) {
     const letter = text(r.bestOptionLetter).toUpperCase().replace(/[^A-Z]/g, '')
     index = letter.length === 1 ? letter.charCodeAt(0) - 65 : -1
@@ -135,7 +142,11 @@ function bestOption(
 }
 
 /** Turns whatever the model returned into a safe ReplyEvaluation, or throws if it is unusable. */
-function normalize(raw: unknown, scenario: Scenario, reply: SubmittedReply): ReplyEvaluation {
+function normalize(
+  raw: unknown,
+  current: ScenarioRound | undefined,
+  reply: SubmittedReply,
+): ReplyEvaluation {
   const r = (raw ?? {}) as Record<string, unknown>
   const score = Math.round(Number(r.score))
   const verdict = text(r.verdict)
@@ -154,7 +165,7 @@ function normalize(raw: unknown, scenario: Scenario, reply: SubmittedReply): Rep
     improvements: strings(r.improvements, 3),
     suggestedRewrite: text(r.suggestedRewrite),
     likelyReaction: text(r.likelyReaction),
-    bestOption: bestOption(r, scenario, reply),
+    bestOption: bestOption(r, current, reply),
   }
   // Picking the best option available is the right answer; don't mark it down
   if (evaluation.bestOption?.picked) {
@@ -166,20 +177,27 @@ function normalize(raw: unknown, scenario: Scenario, reply: SubmittedReply): Rep
   return evaluation
 }
 
+/**
+ * Grades the reply sent in `round`. `history` holds the user's replies to the earlier rounds,
+ * so the coach sees the whole conversation so far.
+ */
 export async function evaluateReply(
   scenario: Scenario,
+  round: number,
+  history: SubmittedReply[],
   reply: SubmittedReply,
   signal?: AbortSignal,
 ): Promise<ReplyEvaluation> {
+  const current = scenario.rounds[round]
   const raw = await chatJson<unknown>(
     [
       {
         role: 'system',
-        content: pickedFrom(scenario, reply).length ? SYSTEM_PROMPT + OPTIONS_PROMPT : SYSTEM_PROMPT,
+        content: pickedFrom(current, reply).length ? SYSTEM_PROMPT + OPTIONS_PROMPT : SYSTEM_PROMPT,
       },
-      { role: 'user', content: buildPrompt(scenario, reply) },
+      { role: 'user', content: buildPrompt(scenario, round, history, reply) },
     ],
     { temperature: 0.3, signal },
   )
-  return normalize(raw, scenario, reply)
+  return normalize(raw, current, reply)
 }

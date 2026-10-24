@@ -7,6 +7,8 @@ import MessageBubble from './MessageBubble.vue'
 // Styled as a graded index card taped to the desk under the scenario note,
 // with a rubber-stamped score and comments in the coach's handwriting.
 // state: 'loading' while the AI reads the reply, 'done' with an evaluation, 'error' with a message.
+// The Continue button sits at the bottom of the graded card, so the user reads the feedback before
+// moving on; `last` turns it into "Finish scenario". An error offers to skip the feedback instead.
 const props = withDefaults(
   defineProps<{
     state: 'loading' | 'done' | 'error'
@@ -14,10 +16,11 @@ const props = withDefaults(
     error?: string
     contactName: string
     tone: string
+    last?: boolean
   }>(),
-  { evaluation: null, error: '' },
+  { evaluation: null, error: '', last: false },
 )
-const emit = defineEmits<{ retry: [] }>()
+const emit = defineEmits<{ retry: []; continue: [] }>()
 
 // Stamp ink: green for strong replies, amber for okay, red for ones to rethink
 const ink = computed(() => {
@@ -52,7 +55,12 @@ const toneMatch = computed(() => toneLabels[props.evaluation?.toneMatch ?? 'clos
       <p class="hand label">Coach's feedback</p>
       <h2>The coach couldn't grade this one</h2>
       <p class="message">{{ error }}</p>
-      <button type="button" class="retry" @click="emit('retry')">Try again</button>
+      <div class="error-actions">
+        <button type="button" class="retry" @click="emit('retry')">Try again</button>
+        <button type="button" class="skip" @click="emit('continue')">
+          Skip feedback and {{ last ? 'finish' : 'continue' }}
+        </button>
+      </div>
     </div>
 
     <!-- The graded card -->
@@ -112,6 +120,10 @@ const toneMatch = computed(() => toneLabels[props.evaluation?.toneMatch ?? 'clos
         <h3 class="hand">A stronger version</h3>
         <MessageBubble sender="me" :text="evaluation.suggestedRewrite" :tail="false" />
       </section>
+
+      <button type="button" class="continue" @click="emit('continue')">
+        {{ last ? 'Finish scenario' : 'Continue conversation' }} <span aria-hidden="true">→</span>
+      </button>
     </div>
   </article>
 </template>
@@ -308,6 +320,49 @@ li::before {
 /* ---- Error ---------------------------------------------------------------- */
 .error h2 { padding-right: 0; font-size: 20px; }
 .message { margin: 0 0 14px; font-size: 15px; color: rgba(23, 32, 42, 0.75); }
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.skip {
+  font: inherit;
+  font-size: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--desk-ink);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---- Continue: the one way forward, after the feedback ------------------- */
+.continue {
+  display: block;
+  width: 100%;
+  margin-top: 22px;
+  padding: 12px 16px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  color: #fff;
+  background: var(--ios-blue);
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px -8px rgba(0, 122, 255, 0.8);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.continue:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px -10px rgba(0, 122, 255, 0.9);
+}
+.continue:focus-visible {
+  outline: 3px solid rgba(0, 122, 255, 0.4);
+  outline-offset: 2px;
+}
+
 .retry {
   font: inherit;
   font-weight: 600;
