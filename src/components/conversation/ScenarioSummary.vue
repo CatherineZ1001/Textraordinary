@@ -3,7 +3,8 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { ReplyEvaluation } from '@/ai/evaluateReply'
 
-// Shown under the scenario note once the last round is done: each round's grade and the average.
+// Shown in the practice page's right-hand column once the last round is done, directly on the
+// panel: the average score as a big stat, then one row per round (score, verdict).
 // A round whose feedback was skipped (the coach failed) has a null result and shows "—".
 const props = defineProps<{ results: (ReplyEvaluation | null)[] }>()
 const emit = defineEmits<{ restart: [] }>()
@@ -14,123 +15,128 @@ const average = computed(() =>
     ? Math.round((scored.value.reduce((sum, r) => sum + r.score, 0) / scored.value.length) * 10) / 10
     : null,
 )
-
-// Same ink as the feedback card's stamp: green for strong, amber for okay, red to rethink
-const ink = (score: number) => (score >= 8 ? 'good' : score >= 5 ? 'okay' : 'poor')
 </script>
 
 <template>
   <article class="card" aria-live="polite">
-    <p class="hand label">Coach's summary</p>
-    <h2>Scenario complete</h2>
-    <p v-if="average !== null" class="average">
-      Average score: <strong :class="ink(average)">{{ average }}</strong> / 10
+    <p class="eyebrow">Scenario complete</p>
+
+    <p class="average">
+      <span class="num">{{ average ?? '—' }}</span><span class="unit">/10</span>
     </p>
+    <p class="eyebrow caption">Average score</p>
 
     <ol class="rounds">
       <li v-for="(result, i) in results" :key="i">
-        <span class="round">Round {{ i + 1 }}</span>
-        <template v-if="result">
-          <span class="score" :class="ink(result.score)">{{ result.score }}</span>
-          <span class="verdict">{{ result.verdict }}</span>
-        </template>
-        <template v-else>
-          <span class="score skipped">—</span>
-          <span class="verdict muted">Feedback skipped</span>
-        </template>
+        <span class="score">{{ result ? result.score : '—' }}</span>
+        <span class="detail">
+          <span class="eyebrow">Round {{ i + 1 }}</span>
+          <span class="verdict">{{ result ? result.verdict : 'Feedback skipped' }}</span>
+        </span>
       </li>
     </ol>
 
     <div class="actions">
-      <button type="button" class="again" @click="emit('restart')">Practice again</button>
+      <button type="button" class="again" @click="emit('restart')">
+        Practice again <span aria-hidden="true">↻</span>
+      </button>
       <RouterLink :to="{ name: 'scenarios' }" class="all">All scenarios</RouterLink>
     </div>
   </article>
 </template>
 
 <style scoped>
-/* the same index card as the coach's feedback */
+/* No box: same as the feedback it replaces, a navy rule on top */
 .card {
-  --rule: rgba(0, 122, 255, 0.11);
-  --margin: rgba(230, 70, 70, 0.4);
-  --pen-red: #c8352e;
-  --pen-green: #1f8a4c;
-  --pen-amber: #b7700a;
-
-  position: relative;
-  padding: 26px 26px 24px 46px;
-  border-radius: 3px;
-  background:
-    linear-gradient(90deg, transparent 30px, var(--margin) 30px, var(--margin) 31.5px, transparent 31.5px),
-    repeating-linear-gradient(transparent 0 27px, var(--rule) 27px 28px),
-    #fffefb;
-  background-position: 0 0, 0 18px, 0 0;
-  box-shadow: 0 1px 0 rgba(23, 32, 42, 0.08), 0 14px 30px -18px rgba(23, 32, 42, 0.45);
-  transform: rotate(0.8deg);
+  padding-top: 16px;
+  border-top: 2px solid var(--powder);
 }
-.hand {
-  font-family: var(--font-hand);
-}
-.label {
+.eyebrow {
   margin: 0;
-  font-size: 22px;
-  color: var(--pen-red);
+  color: var(--ink-soft);
 }
-h2 {
-  margin: 2px 0 6px;
-  font-size: 24px;
-}
+
 .average {
-  margin: 0 0 14px;
+  display: flex;
+  align-items: baseline;
+  margin: 16px 0 4px;
 }
+.num {
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+.unit {
+  margin-left: 4px;
+  font-size: 26px;
+  font-weight: 500;
+}
+.caption {
+  padding-bottom: 18px;
+}
+
 .rounds {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 .rounds li {
-  display: grid;
-  grid-template-columns: auto auto 1fr;
+  display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 0;
+  gap: 18px;
+  padding: 14px 0;
+  border-top: 1px solid var(--ink-rule);
 }
-.round {
-  font-size: 14px;
-  color: var(--desk-ink);
+.rounds li:last-child {
+  border-bottom: 1px solid var(--ink-rule);
 }
 .score {
-  min-width: 32px;
-  text-align: center;
-  font-weight: 700;
-  font-size: 18px;
-  border: 2px solid currentColor;
-  border-radius: 999px;
+  min-width: 52px;
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.04em;
 }
-.good { color: var(--pen-green); }
-.okay { color: var(--pen-amber); }
-.poor { color: var(--pen-red); }
-.skipped { color: var(--desk-ink); }
-.muted { color: var(--desk-ink); }
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.verdict {
+  font-size: 16px;
+  font-weight: 500;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
-  margin-top: 20px;
+  gap: 20px;
+  margin-top: 22px;
 }
 .again {
-  padding: 10px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: var(--ios-blue);
+  color: var(--navy);
+  background: var(--powder);
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
+}
+.again:hover {
+  background: var(--icy-deep);
 }
 .all {
   font-weight: 500;
-  color: var(--desk-ink);
+  color: var(--navy);
+}
+
+@media (max-width: 860px) {
+  .num { font-size: 68px; }
 }
 </style>

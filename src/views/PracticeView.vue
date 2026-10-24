@@ -73,6 +73,8 @@ const results = ref<(ReplyEvaluation | null)[]>([])
 const attempt = ref(0) // remounts the conversation page for "Practice again"
 const roundCount = computed(() => scenario.value?.rounds.length ?? 0)
 const finished = computed(() => roundCount.value > 0 && round.value >= roundCount.value)
+/** "01", "02", ... shown large in the right-hand column */
+const number = computed(() => String(scenario.value?.order ?? 1).padStart(2, '0'))
 
 function errorMessage(err: unknown): string {
   if (err instanceof NavigatorError && err.status === 401) {
@@ -158,63 +160,209 @@ onBeforeUnmount(() => controller?.abort())
 
 <template>
   <main class="practice">
-    <div class="top">
-      <RouterLink :to="{ name: 'scenarios' }" class="back">‹ All scenarios</RouterLink>
-      <ModeSwitch v-model="mode" />
+    <!-- one white panel filling the screen: brief | phone | feedback -->
+    <div class="panel">
+      <div class="top">
+        <RouterLink :to="{ name: 'scenarios' }" class="back">← All scenarios</RouterLink>
+        <ModeSwitch v-model="mode" class="mode" />
+      </div>
+      <p v-if="loadState === 'loading'" class="status">
+        <span class="spinner"></span> Loading scenario…
+      </p>
+      <div v-else-if="loadState === 'error'" class="status">
+        <p class="alert alert-error">{{ loadError }}</p>
+        <button type="button" class="btn" @click="loadScenario">Try again</button>
+        <p><RouterLink :to="{ name: 'scenarios' }">Back to all scenarios</RouterLink></p>
+      </div>
+      <ConversationPage
+        v-else-if="scenario"
+        :key="attempt"
+        class="body"
+        :scenario="scenario"
+        :mode="mode"
+        :selected-id="selectedId"
+        :round="round"
+        :history="history"
+        sent-placeholder="Read the coach's feedback, then tap Continue"
+        @select="(id) => (selectedId = id)"
+        @submit="onSubmit"
+      >
+        <template #feedback>
+          <div class="aside">
+            <!-- the scenario's number, large, with the round underneath -->
+            <div class="aside-head">
+              <p class="number">{{ number }}</p>
+              <p class="eyebrow">
+                {{ finished ? 'Complete' : `Round ${round + 1} of ${roundCount}` }}
+              </p>
+            </div>
+
+            <Transition name="fade" mode="out-in">
+              <ScenarioSummary
+                v-if="finished"
+                key="summary"
+                :results="results"
+                @restart="resetRounds"
+              />
+              <FeedbackCard
+                v-else-if="evalState !== 'idle'"
+                key="feedback"
+                :state="evalState"
+                :evaluation="evaluation"
+                :error="evalError"
+                :contact-name="scenario.contact?.name ?? 'They'"
+                :tone="scenario.tone"
+                :last="round === roundCount - 1"
+                @retry="retry"
+                @continue="continueRound"
+              />
+              <div v-else key="idle" class="idle">
+                <svg class="mark" viewBox="-5 -3 110 106" aria-hidden="true">
+                  <path
+                    d="M50 4 C76 4 96 22 96 46 C96 70 76 88 50 88 C44 88 38 87 33 85 L12 96 L17 77 C9 69 4 58 4 46 C4 22 24 4 50 4 Z M50 18 C69 18 82 30 82 46 C82 62 69 74 50 74 C31 74 18 62 18 46 C18 30 31 18 50 18 Z"
+                    fill-rule="evenodd"
+                  />
+                  <path d="M31 30 H69 V41 H55.5 V64 H44.5 V41 H31 Z" />
+                </svg>
+                <p class="hint">
+                  {{
+                    mode === 'choose'
+                      ? 'Pick a reply on the phone and send it.'
+                      : 'Write your reply on the phone and send it.'
+                  }}
+                  The coach's feedback will appear here.
+                </p>
+              </div>
+            </Transition>
+          </div>
+        </template>
+      </ConversationPage>
     </div>
-    <p v-if="loadState === 'loading'" class="status">Loading scenario…</p>
-    <div v-else-if="loadState === 'error'" class="status">
-      <p class="alert alert-error">{{ loadError }}</p>
-      <button type="button" class="btn btn-secondary" @click="loadScenario">Try again</button>
-      <p><RouterLink :to="{ name: 'scenarios' }">Back to all scenarios</RouterLink></p>
-    </div>
-    <ConversationPage
-      v-else-if="scenario"
-      :key="attempt"
-      :scenario="scenario"
-      :mode="mode"
-      :selected-id="selectedId"
-      :round="round"
-      :history="history"
-      sent-placeholder="Read the coach's feedback, then tap Continue"
-      @select="(id) => (selectedId = id)"
-      @submit="onSubmit"
-    >
-      <template v-if="finished || evalState !== 'idle'" #feedback>
-        <ScenarioSummary v-if="finished" :results="results" @restart="resetRounds" />
-        <FeedbackCard
-          v-else-if="evalState !== 'idle'"
-          :state="evalState"
-          :evaluation="evaluation"
-          :error="evalError"
-          :contact-name="scenario.contact?.name ?? 'They'"
-          :tone="scenario.tone"
-          :last="round === roundCount - 1"
-          @retry="retry"
-          @continue="continueRound"
-        />
-      </template>
-    </ConversationPage>
   </main>
 </template>
 
 <style scoped>
+/* Fits the window below the nav bar on wide screens, so nothing needs page scrolling */
+.practice {
+  height: calc(100dvh - var(--nav-height));
+  padding: 0 12px 12px;
+  /* powder blue continues from the nav bar around the white panel */
+  background: var(--powder);
+}
+.panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 32px 28px;
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  color: var(--navy);
+}
 .top {
   /* the back link sits on the left while the mode switch stays centered */
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 12px;
-  padding: 24px 16px 0;
 }
 .back {
   justify-self: start;
-  color: var(--desk-ink);
+  color: var(--ink-soft);
   font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.back:hover {
+  color: var(--navy);
+}
+/* a wide switch, so it reads as the main control above the phone */
+.mode {
+  width: min(420px, 56vw);
+}
+.body {
+  flex: 1;
+  min-height: 0;
 }
 .status {
   max-width: 420px;
   margin: 48px auto;
   text-align: center;
+  color: var(--ink-soft);
+}
+
+/* ---- Right column ------------------------------------------------------- */
+.aside {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.aside-head {
+  text-align: right;
+  margin-bottom: 16px;
+}
+.number {
+  margin: 0;
+  font-size: clamp(56px, 9vh, 104px);
+  line-height: 0.9;
+  font-weight: 400;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.aside-head .eyebrow {
+  margin: 8px 0 0;
+}
+/* before the first reply: the logo in icy blue, and where the feedback will go */
+.idle {
+  margin-top: auto;
+}
+.idle .mark {
+  display: block;
+  width: 132px;
+  fill: var(--powder);
+}
+.idle .hint {
+  margin: 18px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--ink-rule);
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s, transform 0.25s;
+}
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Small screens: everything stacks and the page scrolls */
+@media (max-width: 860px) {
+  .practice {
+    height: auto;
+  }
+  .panel {
+    height: auto;
+    padding: 16px 16px 24px;
+  }
+  .aside {
+    min-height: 0;
+  }
+  .aside-head {
+    text-align: left;
+  }
+  .idle {
+    margin-top: 0;
+  }
+  .idle .mark {
+    display: none;
+  }
 }
 </style>

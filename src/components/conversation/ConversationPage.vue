@@ -33,7 +33,10 @@ import { threadBefore } from '@/data/thread'
 //
 // Slots:
 //   response  - replaces the suggested-reply tray
-//   feedback  - shown under the scenario note, e.g. the coach's grade for the reply
+//   feedback  - the right-hand column, e.g. the coach's grade for the reply
+//
+// Layout (wide screens): brief | phone | feedback, filling the height it is given. The phone is
+// drawn at 400x820 and scaled down with CSS zoom to fit that height.
 const props = withDefaults(
   defineProps<{
     scenario: Scenario
@@ -206,6 +209,25 @@ onMounted(start)
 watch(() => props.scenario.id, start)
 onBeforeUnmount(() => runId++)
 
+// --- Phone size ----------------------------------------------------------------
+// Scale the phone to the height of its column; on small screens it fills the screen instead.
+const PHONE_HEIGHT = 830 // the device's drawn height including its rim
+const phoneCol = ref<HTMLElement | null>(null)
+const phoneScale = ref(1)
+let resizeObserver: ResizeObserver | undefined
+onMounted(() => {
+  const narrow = window.matchMedia('(max-width: 860px)')
+  const fit = () => {
+    const height = phoneCol.value?.clientHeight ?? PHONE_HEIGHT
+    phoneScale.value = narrow.matches ? 1 : Math.min(1, Math.max(0.55, height / PHONE_HEIGHT))
+  }
+  resizeObserver = new ResizeObserver(fit)
+  if (phoneCol.value) resizeObserver.observe(phoneCol.value)
+  narrow.addEventListener('change', fit)
+  fit()
+})
+onBeforeUnmount(() => resizeObserver?.disconnect())
+
 const placeholder = computed(() => {
   if (phase.value === 'sent') return props.sentPlaceholder
   if (props.mode === 'write') return phase.value === 'ready' ? 'Write your reply' : 'Text Message'
@@ -215,97 +237,103 @@ const placeholder = computed(() => {
 
 <template>
   <div class="page">
-    <div class="side" :class="{ 'has-feedback': $slots.feedback }">
-      <ScenarioHeader
-        :title="scenario.title"
-        :category="scenario.category"
-        :tone="scenario.tone"
-        :context="scenario.context"
-      />
-      <Transition name="drop">
-        <div v-if="$slots.feedback" class="feedback">
-          <slot name="feedback" />
-        </div>
-      </Transition>
+    <ScenarioHeader
+      class="brief"
+      :title="scenario.title"
+      :category="scenario.category"
+      :tone="scenario.tone"
+      :context="scenario.context"
+    />
+
+    <div ref="phoneCol" class="phone-col">
+      <PhoneFrame
+        class="phone"
+        :style="{ zoom: phoneScale }"
+        :status-tone="phase === 'locked' ? 'light' : 'dark'"
+        :screen-off="phase === 'locked' && asleep"
+      >
+        <ChatNavBar :name="contactName" :role="scenario.contact?.role" />
+
+        <ConversationThread
+          :messages="visibleMessages"
+          :typing="typing"
+          :first-time="messages[0]?.time"
+        />
+
+        <ReplyBar
+          ref="replyBar"
+          v-model="draft"
+          :class="{ 'home-space': !(phase === 'ready' && mode === 'choose') }"
+          :editable="mode === 'write'"
+          :disabled="phase !== 'ready'"
+          :text="phase === 'ready' ? selectedText : ''"
+          :placeholder="placeholder"
+          @submit="send"
+        />
+
+        <!-- Suggested replies rise like the keyboard once messages finish.
+             In 'write' mode the input bar above is the whole interface. -->
+        <Transition name="keyboard">
+          <div v-if="phase === 'ready' && mode === 'choose'" class="keyboard">
+            <slot name="response">
+              <ResponseOptions
+                v-if="options.length"
+                :options="options"
+                :selected-id="selectedId"
+                @select="(id) => emit('select', id)"
+              />
+            </slot>
+          </div>
+        </Transition>
+
+        <Transition name="unlock">
+          <LockScreen
+            v-if="phase === 'locked'"
+            :contact-name="contactName"
+            :preview="firstIncoming?.text"
+            @wake="asleep = false"
+            @open="openFromLockScreen"
+          />
+        </Transition>
+      </PhoneFrame>
     </div>
 
-    <PhoneFrame
-      class="phone"
-      :status-tone="phase === 'locked' ? 'light' : 'dark'"
-      :screen-off="phase === 'locked' && asleep"
-    >
-      <ChatNavBar :name="contactName" :role="scenario.contact?.role" />
-
-      <ConversationThread
-        :messages="visibleMessages"
-        :typing="typing"
-        :first-time="messages[0]?.time"
-      />
-
-      <ReplyBar
-        ref="replyBar"
-        v-model="draft"
-        :class="{ 'home-space': !(phase === 'ready' && mode === 'choose') }"
-        :editable="mode === 'write'"
-        :disabled="phase !== 'ready'"
-        :text="phase === 'ready' ? selectedText : ''"
-        :placeholder="placeholder"
-        @submit="send"
-      />
-
-      <!-- Suggested replies rise like the keyboard once messages finish.
-           In 'write' mode the input bar above is the whole interface. -->
-      <Transition name="keyboard">
-        <div v-if="phase === 'ready' && mode === 'choose'" class="keyboard">
-          <slot name="response">
-            <ResponseOptions
-              v-if="options.length"
-              :options="options"
-              :selected-id="selectedId"
-              @select="(id) => emit('select', id)"
-            />
-          </slot>
-        </div>
-      </Transition>
-
-      <Transition name="unlock">
-        <LockScreen
-          v-if="phase === 'locked'"
-          :contact-name="contactName"
-          :preview="firstIncoming?.text"
-          @wake="asleep = false"
-          @open="openFromLockScreen"
-        />
-      </Transition>
-    </PhoneFrame>
+    <div class="aside">
+      <slot name="feedback" />
+    </div>
   </div>
 </template>
 
 <style scoped>
+/* brief | phone | feedback across the full width, as tall as the parent allows */
 .page {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 24px 24px 64px;
+  height: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 400px;
-  gap: 56px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 40px;
 }
-.side {
-  position: sticky;
-  top: 56px;
-  margin-top: 8px;
+.brief,
+.phone-col,
+.aside {
+  min-height: 0;
 }
-/* the feedback card can make the column taller than the window, so let it scroll with the page */
-.side.has-feedback { position: static; }
-.feedback { margin-top: 30px; }
-
-/* the feedback card is dropped onto the desk */
-.drop-enter-active { transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1), opacity 0.3s; }
-.drop-leave-active { transition: opacity 0.2s; }
-.drop-enter-from { opacity: 0; transform: translateY(-16px) scale(0.97); }
-.drop-leave-to { opacity: 0; }
-.phone { position: sticky; top: 24px; }
+.phone-col {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+.phone {
+  width: 400px;
+  flex-shrink: 0;
+}
+/* the feedback can be longer than the screen, so its column scrolls on its own */
+.aside {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 4px 32px 0;
+  /* fade the bottom edge so it is clear there is more to scroll */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent);
+}
 
 /* room for the home indicator when nothing sits under the input bar */
 .home-space { padding-bottom: 30px; }
@@ -319,15 +347,14 @@ const placeholder = computed(() => {
 .unlock-leave-to { transform: translateY(-100%); opacity: 0.6; }
 
 @media (max-width: 860px) {
+  /* stacked: brief, then phone, then the feedback, and the page scrolls */
   .page {
+    height: auto;
     grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 16px;
+    gap: 20px;
   }
-  /* stacked: note, then phone, then the feedback card under the phone */
-  .side { display: contents; }
-  .feedback { order: 1; margin-top: 8px; }
-  .phone { position: static; }
+  .phone { width: 100%; }
+  .aside { overflow: visible; padding: 0; mask-image: none; }
   .home-space { padding-bottom: 12px; }
 }
 </style>
