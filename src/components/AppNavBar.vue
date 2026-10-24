@@ -10,6 +10,11 @@ const route = useRoute()
 const router = useRouter()
 const { user, ready, logout } = useAuth()
 
+// On the practice view the bar turns powder blue, framing that page's white panel
+const tinted = computed(() => route.name === 'practice')
+// On the scenario list the bar is plain white with no divider, blending into that page's white frame
+const plain = computed(() => route.name === 'scenarios')
+
 const menuOpen = ref(false)
 watch(
   () => route.fullPath,
@@ -50,15 +55,17 @@ async function signOut() {
 </script>
 
 <template>
-  <header class="bar">
+  <header class="bar" :class="{ tinted, plain }">
     <div class="inner">
       <RouterLink to="/" class="brand" aria-label="Textraordinary home">
+        <!-- the splash screen's lime logo on a navy tile (icy blue on white on the practice view) -->
         <span class="mark" aria-hidden="true">
-          <svg width="18" height="16" viewBox="0 0 18 16">
+          <svg viewBox="-5 -3 110 106" width="22" height="22">
             <path
-              d="M9 1C4.6 1 1 3.9 1 7.4c0 2 1.2 3.8 3 5l-.7 2.6 3.2-1.6c.8.2 1.6.3 2.5.3 4.4 0 8-2.9 8-6.3S13.4 1 9 1Z"
-              fill="currentColor"
+              d="M50 4 C76 4 96 22 96 46 C96 70 76 88 50 88 C44 88 38 87 33 85 L12 96 L17 77 C9 69 4 58 4 46 C4 22 24 4 50 4 Z M50 18 C69 18 82 30 82 46 C82 62 69 74 50 74 C31 74 18 62 18 46 C18 30 31 18 50 18 Z"
+              fill-rule="evenodd"
             />
+            <path d="M31 30 H69 V41 H55.5 V64 H44.5 V41 H31 Z" />
           </svg>
         </span>
         Textraordinary
@@ -121,10 +128,10 @@ async function signOut() {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: color-mix(in srgb, var(--desk) 82%, transparent);
+  background: color-mix(in srgb, var(--white) 92%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(23, 32, 42, 0.08);
+  border-bottom: 1px solid var(--line);
 }
 
 .inner {
@@ -136,23 +143,20 @@ async function signOut() {
   gap: 24px;
 }
 
-/* Reset the global green link styles from main.css inside the bar. */
+/* Reset the global link styles from main.css inside the bar. */
 .bar a {
   color: inherit;
-  transition: none;
-}
-.bar a:hover {
-  background-color: transparent;
+  text-decoration: none;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: 21px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 600;
   letter-spacing: -0.02em;
-  color: var(--ink);
+  color: var(--navy);
 }
 
 .mark {
@@ -161,8 +165,12 @@ async function signOut() {
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: var(--ios-blue);
-  color: #fff;
+  background: var(--navy);
+  color: var(--lime);
+}
+.mark svg {
+  display: block;
+  fill: currentColor;
 }
 
 .panel {
@@ -173,33 +181,65 @@ async function signOut() {
   gap: 24px;
 }
 
-/* Page links share the look of the practice ModeSwitch segmented control. */
+/* Plain text links; the current page is darker with a small lime marker underneath */
 .links {
   display: inline-flex;
-  padding: 3px;
-  border-radius: 10px;
-  background: rgba(23, 32, 42, 0.1);
+  gap: 4px;
 }
 
 .bar .link {
-  padding: 6px 14px;
-  border-radius: 8px;
+  position: relative;
+  padding: 6px 12px;
   font-size: 15px;
   font-weight: 500;
-  color: var(--desk-ink);
-  transition:
-    background 0.18s,
-    box-shadow 0.18s,
-    color 0.18s;
+  color: var(--muted);
+  transition: color 0.18s;
 }
 .bar .link:hover {
-  color: var(--ink);
+  color: var(--navy);
 }
 .bar .link.router-link-active {
-  background: #fff;
-  color: var(--ink);
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(23, 32, 42, 0.18);
+  color: var(--navy);
+}
+/* Scenario list: solid white, no divider */
+.bar.plain {
+  background: var(--white);
+  border-bottom-color: transparent;
+}
+
+/* Practice view: only white and icy blue, no navy or lime fills */
+.bar.tinted {
+  background: var(--powder);
+  border-bottom-color: transparent;
+}
+.bar.tinted .mark {
+  background: var(--white);
+  color: var(--icy-deep);
+}
+.bar.tinted .link.router-link-active::after {
+  background: var(--white);
+}
+.bar.tinted .pill-ghost {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+.bar.tinted .pill-solid,
+.bar.tinted .avatar {
+  background: var(--white);
+  color: var(--navy);
+}
+.bar.tinted .pill-solid:hover {
+  background: var(--powder-soft);
+}
+
+.bar .link.router-link-active::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -2px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--lime);
 }
 
 .account {
@@ -224,12 +264,12 @@ async function signOut() {
 }
 
 .bar .pill-solid {
-  background: var(--ink);
-  color: #fff;
+  background: var(--navy);
+  color: var(--lime);
   border: 0;
 }
 .bar .pill-solid:hover {
-  background: #2b3846;
+  background: var(--navy-soft);
 }
 .pill-solid svg {
   transition: transform 0.18s;
@@ -240,11 +280,11 @@ async function signOut() {
 
 .bar .pill-ghost {
   background: transparent;
-  color: var(--ink);
-  border: 1.5px solid rgba(23, 32, 42, 0.22);
+  color: var(--navy);
+  border: 1.5px solid var(--line);
 }
 .bar .pill-ghost:hover {
-  background: rgba(23, 32, 42, 0.06);
+  border-color: var(--navy);
 }
 
 .bar .avatar {
@@ -253,21 +293,13 @@ async function signOut() {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(#a5abb6, #858b96);
-  color: #fff;
+  background: var(--lime);
+  color: var(--navy);
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
 
-.link:focus-visible,
-.pill:focus-visible,
-.avatar:focus-visible,
-.brand:focus-visible,
-.menu-toggle:focus-visible {
-  outline: 2px solid var(--ios-blue);
-  outline-offset: 2px;
-}
 
 .menu-toggle {
   display: none;
@@ -280,7 +312,7 @@ async function signOut() {
   font: inherit;
   font-size: 15px;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--navy);
   cursor: pointer;
 }
 
@@ -322,7 +354,16 @@ async function signOut() {
     flex-direction: column;
   }
   .bar .link {
-    padding: 10px 14px;
+    padding: 10px 4px;
+  }
+  .bar .link.router-link-active::after {
+    left: -10px;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    width: 4px;
+    height: 18px;
+    transform: translateY(-50%);
   }
 
   .account {

@@ -28,28 +28,30 @@ const modes: { value: PracticeMode; label: string }[] = [
 </template>
 
 <style scoped>
+/* A pale icy-blue pill with the chosen mode in a deeper icy blue */
 .switch {
   display: inline-flex;
-  padding: 3px;
-  border-radius: 10px;
-  background: rgba(23, 32, 42, 0.1);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--powder-soft);
 }
 button {
+  flex: 1;
   border: 0;
   background: transparent;
   font: inherit;
   font-size: 15px;
   font-weight: 500;
-  color: var(--ink);
-  padding: 7px 16px;
-  border-radius: 8px;
+  color: var(--ink-soft);
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: background 0.18s, box-shadow 0.18s;
+  transition: background 0.18s, color 0.18s;
 }
+button:hover { color: var(--navy); }
 button.on {
-  background: #fff;
+  background: var(--powder);
+  color: var(--navy);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(23, 32, 42, 0.18);
 }
-button:focus-visible { outline: 2px solid var(--ios-blue); outline-offset: 1px; }
 </style>

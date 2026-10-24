@@ -1,15 +1,42 @@
 /*
   Textraordinary theme tokens.
-  The page is a desk, the conversation happens on an iPhone, and the
-  scenario brief is a note from a coach sitting next to it.
+  Flat, color-blocked panels in navy, lime and powder blue on an off-white page,
+  matching the intro splash. The conversation itself stays a realistic iPhone/iMessage.
+  Light mode only for now.
 */
 :root {
-  --desk: #d9e1e7;        /* cool grey-blue page */
-  --desk-ink: #4a5866;
-  --ink: #17202a;
-  --note: #fff3b3;        /* coach's note */
+  /* Brand palette (navy and lime are the splash screen's colors) */
+  --navy: #2b3541;
+  --navy-soft: #3a4656;   /* hover on navy */
+  --lime: #d6e668;
+  --lime-deep: #c8d951;   /* hover on lime */
+  --powder: #b7cedd;      /* calm panels */
+  --powder-soft: #dce8ef;
+  --icy-deep: #95b4c8;    /* hover/pressed on icy blue */
+  --paper: #f3f5f2;       /* page background */
+  --white: #ffffff;
+  --slate: #5b7fae;       /* small accents only: icons, focus rings */
+  --muted: #5a6775;       /* secondary text on paper/white */
+  --line: rgba(43, 53, 65, 0.14); /* hairline dividers and borders */
+  /* softer navy text and navy hairlines that work on white and on lime */
+  --ink-soft: rgba(43, 53, 65, 0.7);
+  --ink-rule: rgba(43, 53, 65, 0.2);
 
-  /* iOS-style colors */
+  /* Feedback colors for scores; used sparingly */
+  --good: #3f7d4e;
+  --warn: #b7700a;
+  --bad: #c8352e;
+
+  --radius-lg: 24px;
+  --radius-md: 14px;
+  --radius-pill: 999px;
+
+  --font-ui: 'Inter Tight', 'Inter', system-ui, sans-serif;
+
+  /* height of the sticky nav bar, so full-screen pages can fit below it */
+  --nav-height: 65px;
+
+  /* iOS-style colors (inside the phone only) */
   --ios-blue: #007aff;
   --ios-grey-bubble: #e9e9eb;
   --ios-secondary: #8e8e93;
@@ -18,20 +45,63 @@
   --ios-keyboard: #d4d7dd;
   --screen: #ffffff;
 
-  --font-ui: 'Schibsted Grotesk', system-ui, sans-serif;
-  /* the coach's handwriting on the feedback card */
-  --font-hand: 'Caveat', 'Segoe Print', cursive;
   /* iPhones/Macs get Apple's own system font; everyone else gets Inter */
   --font-ios: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
   margin: 0;
-  background: var(--desk);
-  color: var(--ink);
+  background: var(--paper);
+  color: var(--navy);
   font-family: var(--font-ui);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Keyboard focus: one consistent ring across the app */
+:focus-visible {
+  outline: 2px solid var(--slate);
+  outline-offset: 2px;
+}
+
+/* ---- Shared pieces ---------------------------------------------------- */
+
+/* Lime pill tag with small uppercase text, e.g. a scenario's category */
+.tag {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--lime);
+  color: var(--navy);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Small uppercase caption above or under a value, e.g. "AIM FOR" */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The open ring from the nav's menu toggle, spinning while something loads */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  vertical-align: -3px;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,57 +1,78 @@
-/* Shared styles for the sign-in, sign-up and account pages. */
+/* Shared styles for the sign-in, sign-up and account pages: a white panel on the off-white page,
+   navy pill buttons with lime text, hairline inputs. Colors come from theme.css. */
 .auth-card {
   width: 100%;
-  max-width: 380px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: var(--color-background-soft);
+  max-width: 420px;
+  margin: 56px auto;
+  padding: 36px 34px 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--white);
 }
 
 .auth-card h1 {
-  margin-bottom: 1.25rem;
-  font-size: 1.6rem;
+  margin-bottom: 1.5rem;
+  font-size: 32px;
+  line-height: 1.1;
   font-weight: 500;
-  color: var(--color-heading);
+  letter-spacing: -0.025em;
+  color: var(--navy);
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 1rem;
 }
 
 .auth-form label {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.9rem;
+  gap: 0.35rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 .auth-form input {
-  padding: 0.55rem 0.7rem;
+  padding: 12px 14px;
   font: inherit;
-  color: var(--color-text);
-  background: var(--color-background);
-  border: 1px solid var(--color-border-hover);
-  border-radius: 6px;
+  font-size: 16px;
+  color: var(--navy);
+  background: var(--white);
+  border: 1px solid rgba(43, 53, 65, 0.22);
+  border-radius: 12px;
+  transition: border-color 0.15s;
+}
+
+.auth-form input:hover {
+  border-color: rgba(43, 53, 65, 0.4);
 }
 
 .auth-form input:focus {
-  outline: 2px solid hsla(160, 100%, 37%, 0.6);
-  outline-offset: 1px;
+  border-color: var(--navy);
+  outline: 3px solid rgba(91, 127, 174, 0.3);
+  outline-offset: 0;
 }
 
 .btn {
-  padding: 0.6rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
   font: inherit;
-  font-weight: 500;
-  color: #fff;
-  background: hsla(160, 100%, 30%, 1);
+  font-weight: 600;
+  color: var(--lime);
+  background: var(--navy);
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn:hover {
+  background: var(--navy-soft);
 }
 
 .btn:disabled {
@@ -60,16 +81,32 @@
 }
 
 .btn-secondary {
-  color: var(--color-text);
-  background: var(--color-background);
-  border-color: var(--color-border-hover);
+  color: var(--navy);
+  background: var(--white);
+  border-color: rgba(43, 53, 65, 0.22);
 }
 
+.btn-secondary:hover {
+  background: var(--white);
+  border-color: var(--navy);
+}
+
+/* "or" between two hairlines */
 .auth-divider {
-  margin: 1rem 0;
-  text-align: center;
-  font-size: 0.85rem;
-  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1.25rem 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
 }
 
 .auth-links {
@@ -77,51 +114,33 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 1.25rem;
-  font-size: 0.9rem;
+  margin-top: 1.5rem;
+  font-size: 14px;
+  color: var(--muted);
 }
 
 .alert {
   margin-bottom: 1rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .alert-error {
-  color: #b42318;
-  background: #fef3f2;
-  border: 1px solid #fda29b;
+  color: #8a2a23;
+  background: #fbecea;
+  border: 1px solid #f1c4bf;
 }
 
 .alert-info {
-  color: #175cd3;
-  background: #eff8ff;
-  border: 1px solid #b2ddff;
+  color: var(--navy);
+  background: var(--powder-soft);
+  border: 1px solid var(--powder);
 }
 
 .alert-success {
-  color: #067647;
-  background: #ecfdf3;
-  border: 1px solid #abefc6;
-}
-
-@media (prefers-color-scheme: dark) {
-  .alert-error {
-    color: #fda29b;
-    background: #3b1210;
-    border-color: #7a271a;
-  }
-
-  .alert-info {
-    color: #b2ddff;
-    background: #102a43;
-    border-color: #1849a9;
-  }
-
-  .alert-success {
-    color: #abefc6;
-    background: #0b2e1e;
-    border-color: #085d3a;
-  }
+  color: #3b4a14;
+  background: #f1f6d2;
+  border: 1px solid var(--lime-deep);
 }

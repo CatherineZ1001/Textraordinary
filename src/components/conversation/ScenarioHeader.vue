@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // The scenario brief: what's going on and what tone to aim for.
-// Styled like a note sitting beside the phone.
+// Fills the left column of the practice page: a large title at the top, and the situation
+// with "Aim for" / "Category" pinned to the bottom under a hairline.
 withDefaults(
   defineProps<{
     title: string
@@ -15,61 +16,81 @@ withDefaults(
 <template>
   <aside class="brief">
     <h1>{{ title }}</h1>
-    <p v-if="context" class="context">{{ context }}</p>
-    <dl>
-      <div>
-        <dt>Aim for</dt>
-        <dd class="tone">{{ tone }}</dd>
-      </div>
-      <div>
-        <dt>Category</dt>
-        <dd class="category">{{ category }}</dd>
-      </div>
-    </dl>
+
+    <div class="bottom">
+      <template v-if="context">
+        <p class="label">The situation</p>
+        <p class="context">{{ context }}</p>
+      </template>
+      <dl class="meta">
+        <div>
+          <dt>Aim for</dt>
+          <dd>{{ tone }}</dd>
+        </div>
+        <div>
+          <dt>Category</dt>
+          <dd class="category">{{ category }}</dd>
+        </div>
+      </dl>
+    </div>
   </aside>
 </template>
 
 <style scoped>
 .brief {
-  background: var(--note);
-  padding: 28px 28px 24px;
-  border-radius: 3px;
-  box-shadow: 0 1px 0 rgba(23, 32, 42, 0.08), 0 14px 30px -18px rgba(23, 32, 42, 0.45);
-  transform: rotate(-1.2deg);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
 }
 h1 {
-  font-size: 30px;
-  line-height: 1.12;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0 0 14px;
-  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(30px, 3.4vw, 50px);
+  line-height: 1.02;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  max-width: 14ch;
+}
+.bottom {
+  margin-top: auto;
+}
+.label {
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ink-rule);
+  font-size: 16px;
+  font-weight: 500;
 }
 .context {
-  font-size: 17px;
-  margin: 0 0 22px;
-  max-width: 38ch;
+  margin: 12px 0 20px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-soft);
 }
-dl {
+.meta {
   margin: 0;
   display: grid;
-  gap: 10px;
-  border-top: 1.5px dashed rgba(23, 32, 42, 0.25);
-  padding-top: 16px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
-dl div { display: flex; gap: 12px; align-items: baseline; }
-dt { font-size: 14px; color: rgba(23, 32, 42, 0.6); min-width: 70px; }
-dd { margin: 0; font-weight: 600; }
-.tone {
-  /* a highlighter swipe: the one thing to remember */
-  background: linear-gradient(transparent 55%, rgba(0, 122, 255, 0.24) 55%);
-  padding: 0 2px;
+dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
-.category { text-transform: capitalize; font-weight: 500; }
+dd {
+  margin: 3px 0 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+.category {
+  text-transform: capitalize;
+}
 
 @media (max-width: 860px) {
-  .brief { transform: none; padding: 22px 20px 18px; }
-  h1 { font-size: 24px; }
-  .context { font-size: 16px; }
+  .brief { height: auto; gap: 16px; }
+  .bottom { margin-top: 0; }
 }
 </style>
