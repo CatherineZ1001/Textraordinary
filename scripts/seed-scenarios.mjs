@@ -7,6 +7,8 @@
 // All files are checked first; if anything is invalid, nothing is written.
 // Writing needs GOOGLE_APPLICATION_CREDENTIALS pointing at a Firebase service account key.
 // --dry-run only checks the files and needs no key.
+// When FIRESTORE_EMULATOR_HOST is set (e.g. inside `firebase emulators:exec`), it writes to the
+// local emulator instead and needs no key either.
 
 import { readFileSync } from 'node:fs'
 import { applicationDefault, initializeApp } from 'firebase-admin/app'
@@ -137,14 +139,17 @@ if (failed) {
 console.log(`✓ ${scenarios.length} scenarios are valid`)
 if (dryRun) process.exit(0)
 
-if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+const emulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST)
+if (!emulator && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
   console.error('✗ GOOGLE_APPLICATION_CREDENTIALS is not set; point it at your service account key.')
   process.exit(1)
 }
 
 // Write in batches (Firestore allows up to 500 writes per batch).
 // set() replaces the whole document, so re-running the script updates scenarios in place.
-initializeApp({ credential: applicationDefault() })
+initializeApp(
+  emulator ? { projectId: process.env.GCLOUD_PROJECT } : { credential: applicationDefault() },
+)
 const db = getFirestore()
 for (let i = 0; i < scenarios.length; i += 500) {
   const batch = db.batch()
@@ -153,4 +158,4 @@ for (let i = 0; i < scenarios.length; i += 500) {
   }
   await batch.commit()
 }
-console.log(`✓ wrote ${scenarios.length} scenarios to Firestore`)
+console.log(`✓ wrote ${scenarios.length} scenarios to ${emulator ? 'the Firestore emulator' : 'Firestore'}`)
