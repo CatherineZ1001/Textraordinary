@@ -1,12 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PracticeView from '../views/PracticeView.vue'
 import { auth } from '@/firebase'
-import { authReady, onSessionLost } from '@/auth/useAuth'
+import { authReady, onSessionLost, useAuth } from '@/auth/useAuth'
 
 declare module 'vue-router' {
   interface RouteMeta {
     /** Only signed-in users may visit; others are sent to the login page. */
     requiresAuth?: boolean
+    /** Only signed-in administrators may visit; other signed-in users are sent to the practice page. */
+    requiresAdmin?: boolean
     /** Only signed-out users may visit (login, register); signed-in users go to the dashboard. */
     guestOnly?: boolean
   }
@@ -21,7 +23,6 @@ const router = createRouter({
       redirect: '/practice',
     },
     {
-      // Nested so the "Practice" nav link stays highlighted while playing a scenario
       path: '/practice',
       children: [
         {
@@ -40,9 +41,6 @@ const router = createRouter({
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
     {
@@ -75,6 +73,12 @@ const router = createRouter({
       component: () => import('../views/ProfileView.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/admin/scenarios',
+      name: 'admin-scenarios',
+      component: () => import('../views/AdminScenariosView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
   ],
 })
 
@@ -87,6 +91,9 @@ router.beforeEach(async (to) => {
   }
   if (to.meta.guestOnly && signedIn) {
     return { name: 'dashboard' }
+  }
+  if (to.meta.requiresAdmin && !useAuth().isAdmin.value) {
+    return { name: 'scenarios' }
   }
 })
 

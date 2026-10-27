@@ -47,3 +47,9 @@ __screenshots__/
 # Firebase emulators
 firebase-debug.log
 firestore-debug.log
+
+# Firebase CLI
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

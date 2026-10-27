@@ -3,12 +3,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Practice scenarios. Matches what is deployed today (readable by anyone).
-    // To require sign-in instead, change to: allow read: if request.auth != null;
-    // Writes come only from scripts/seed-scenarios.mjs (Admin SDK bypasses rules).
+    // Practice scenarios: readable by anyone; only administrators may change them.
+    // scripts/seed-scenarios.mjs uses the Admin SDK, which bypasses rules.
     match /scenarios/{scenarioId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if request.auth != null && request.auth.token.admin == true;
     }
 
     // User profiles: the document ID is the Firebase Auth uid.
