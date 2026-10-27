@@ -2,10 +2,11 @@ import { initializeApp } from 'firebase/app'
 import {
   browserPopupRedirectResolver,
   browserSessionPersistence,
+  connectAuthEmulator,
   GoogleAuthProvider,
   initializeAuth,
 } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
 
 const env = import.meta.env
 
@@ -36,6 +37,12 @@ export const auth = initializeAuth(app, {
   persistence: browserSessionPersistence,
   popupRedirectResolver: browserPopupRedirectResolver,
 })
+
+// End-to-end tests (`vite --mode test`, see .env.test) use the local Firebase emulators instead of the real project.
+if (env.VITE_USE_EMULATORS === 'true') {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true })
+  connectFirestoreEmulator(db, '127.0.0.1', 8080)
+}
 
 export const googleProvider = new GoogleAuthProvider()
 googleProvider.setCustomParameters({ prompt: 'select_account' })

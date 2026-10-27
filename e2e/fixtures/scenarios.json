@@ -1,0 +1,49 @@
+[
+  {
+    "id": "sc-900",
+    "order": 900,
+    "title": "Asking your manager for more time",
+    "category": "professional",
+    "tone": "Honest and solution-focused",
+    "context": "Your project report is due Friday, but your teammate Sam is out sick and you won't finish in time. You could have it done by Tuesday.",
+    "contact": {
+      "name": "Jordan",
+      "role": "Manager"
+    },
+    "rounds": [
+      {
+        "messages": [
+          {
+            "id": "m1",
+            "sender": "them",
+            "text": "Hey, just checking in. Is the report still on track for Friday?",
+            "time": "9:05 AM"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "text": "Yep, all good!",
+            "reaction": "Great, see you Friday then."
+          },
+          {
+            "id": "b",
+            "text": "Sam is out sick, so we're behind. Could we move the deadline to Tuesday? I'll send what's done by Friday.",
+            "reaction": "Thanks for the heads-up. Tuesday works."
+          },
+          {
+            "id": "c",
+            "text": "Sam being out has wrecked everything. It's not my fault it's late.",
+            "reaction": "Let's talk about how to fix this rather than whose fault it is."
+          },
+          {
+            "id": "d",
+            "text": "Can we talk later? Kind of busy right now.",
+            "reaction": "Okay, but I need an answer today."
+          }
+        ],
+        "correctOptionId": "b"
+      }
+    ]
+  }
+]

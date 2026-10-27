@@ -53,3 +53,31 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## Tests
+
+End-to-end tests in `e2e/` use [Playwright](https://playwright.dev) to click through the app like a user. Each test is named after its manual test case (`TC-UA-01`, `TC-SR-01`, `TC-CR-01`).
+
+They never touch the real Firebase project or use NaviGator credit:
+
+- **Firebase:** the app runs against the local [Firebase emulators](https://firebase.google.com/docs/emulator-suite) with a throwaway demo project (settings in `.env.test`). Before each run, the emulators are wiped, the test account `testuser01@example.com` is created, and the test scenario in `e2e/fixtures/scenarios.json` is seeded.
+- **AI grading:** each test replaces the NaviGator request with a fixed answer, so the grade is the same every run. No API key is needed.
+
+`firestore.rules` is a copy of the rules deployed in the Firebase console, so the emulator behaves like the real database. If you change the rules in the console, update this file too.
+
+### Running them in GitHub
+
+The **Tests** workflow (`.github/workflows/tests.yml`) runs automatically on every pull request and every push to `main`. You don't need anything installed to use it: open your PR and check the result at the bottom. If it fails, open the run and download the `playwright-report` artifact to see what went wrong, with a trace of each step.
+
+### Running them on your computer (optional)
+
+The Firebase emulators need **Java 21 or newer** (check with `java -version`). If you don't have it, install [Temurin JDK 21](https://adoptium.net/temurin/releases/?version=21) or skip local runs and rely on the GitHub check. Java is only needed for the tests, not for running the app.
+
+```sh
+npx playwright install chromium   # once, downloads the test browser
+npm run test:e2e                  # run all tests
+npm run test:e2e:ui               # or watch them run step by step
+npx playwright show-report        # open the last run's report
+```
+
+Run the tests through these npm scripts, not with `npx playwright test` directly: the scripts start the emulators first.

@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Practice scenarios. Matches what is deployed today (readable by anyone).
+    // To require sign-in instead, change to: allow read: if request.auth != null;
+    // Writes come only from scripts/seed-scenarios.mjs (Admin SDK bypasses rules).
+    match /scenarios/{scenarioId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // User profiles: the document ID is the Firebase Auth uid.
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['email', 'displayName', 'provider', 'createdAt'])
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.provider in ['password', 'google.com']
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName']);
+
+      allow delete: if false;
+    }
+  }
+}
