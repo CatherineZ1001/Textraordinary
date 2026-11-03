@@ -54,6 +54,24 @@ npm run build
 npm run lint
 ```
 
+## Administrators
+
+To make someone an administrator, open the Firebase console → **Firestore Database** → `users` → their document (the ID is their uid, and the document shows their email), click **Add field**, and add `admin` of type **boolean** set to `true`. They see an **Admin** link in the nav bar after reloading the page. Delete the field (or set it to `false`) to remove the role.
+
+The security rules stop members from setting `admin` on themselves; only the console or an existing administrator can change it. A user's document is created the first time they sign in, so they need to sign in once first.
+
+## Daily challenges
+
+Every day, all members get the same scenario as the daily challenge (`/daily`, also linked from the dashboard and the scenario list). Code is in `src/data/daily.ts`.
+
+- Administrators schedule scenarios on the admin page (`/admin/scenarios`): change any of the next 14 days, or fill the next _n_ days from chosen scenarios. The page warns when tomorrow isn't scheduled. Each scheduled date is a `dailyChallenges/{YYYY-MM-DD}` document holding its `scenarioId`; only administrators can write them.
+- A date with nothing scheduled falls back to the scenario list (scenarios take turns in their `order`), so every date always has a challenge.
+- `users/{uid}/dailyResults/{YYYY-MM-DD}` is a member's official result. The security rules only allow creating it, so each challenge counts once and the result page is shown afterwards.
+- Streaks are worked out from those results (`src/data/streaks.ts`); missing a day resets the streak.
+- `/daily/archive` lists past challenges. Replaying one saves nothing, so official scores and streaks don't change.
+
+Dates are in the member's own time zone. **After pulling these changes, publish `firestore.rules` in the Firebase console** (Firestore → Rules), otherwise the real database rejects the daily challenge writes.
+
 ## Tests
 
 End-to-end tests in `e2e/` use [Playwright](https://playwright.dev) to click through the app like a user. Each test is named after its manual test case (`TC-UA-01`, `TC-SR-01`, `TC-CR-01`).

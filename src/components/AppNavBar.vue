@@ -8,10 +8,12 @@ import { toAuthMessage } from '@/auth/errors'
 // On narrow screens the links and actions collapse behind a "Menu" toggle.
 const route = useRoute()
 const router = useRouter()
-const { user, ready, logout } = useAuth()
+const { user, ready, isAdmin, logout } = useAuth()
 
-// On the practice view the bar turns powder blue, framing that page's white panel
-const tinted = computed(() => route.name === 'practice')
+// On the practice and daily challenge views the bar turns powder blue, framing their white panel
+const tinted = computed(() =>
+  ['practice', 'daily', 'daily-replay', 'daily-archive'].includes(String(route.name)),
+)
 // On the scenario list the bar is plain white with no divider, blending into that page's white frame
 const plain = computed(() => route.name === 'scenarios')
 
@@ -25,10 +27,12 @@ const links = computed(() => [
   { to: '/practice', label: 'Practice' },
   ...(user.value
     ? [
+        { to: '/daily', label: 'Daily' },
         { to: '/dashboard', label: 'Dashboard' },
         { to: '/profile', label: 'Profile' },
       ]
     : []),
+  ...(isAdmin.value ? [{ to: '/admin/scenarios', label: 'Admin' }] : []),
   { to: '/about', label: 'About' },
 ])
 

@@ -2,24 +2,29 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { ReplyEvaluation } from '@/ai/evaluateReply'
+import { averageScore } from '@/data/daily'
 
 // Shown in the practice page's right-hand column once the last round is done, directly on the
 // panel: the average score as a big stat, then one row per round (score, verdict).
 // A round whose feedback was skipped (the coach failed) has a null result and shows "—".
-const props = defineProps<{ results: (ReplyEvaluation | null)[] }>()
+// The default slot goes above the buttons, e.g. whether a daily challenge result was saved.
+// `restartable: false` hides "Practice again" (an official daily challenge counts once).
+const props = withDefaults(
+  defineProps<{
+    results: (Pick<ReplyEvaluation, 'score' | 'verdict'> | null)[]
+    restartable?: boolean
+    eyebrow?: string
+  }>(),
+  { restartable: true, eyebrow: 'Scenario complete' },
+)
 const emit = defineEmits<{ restart: [] }>()
 
-const scored = computed(() => props.results.filter((r): r is ReplyEvaluation => r !== null))
-const average = computed(() =>
-  scored.value.length
-    ? Math.round((scored.value.reduce((sum, r) => sum + r.score, 0) / scored.value.length) * 10) / 10
-    : null,
-)
+const average = computed(() => averageScore(props.results))
 </script>
 
 <template>
   <article class="card" aria-live="polite">
-    <p class="eyebrow">Scenario complete</p>
+    <p class="eyebrow">{{ eyebrow }}</p>
 
     <p class="average">
       <span class="num">{{ average ?? '—' }}</span><span class="unit">/10</span>
@@ -36,8 +41,10 @@ const average = computed(() =>
       </li>
     </ol>
 
+    <slot />
+
     <div class="actions">
-      <button type="button" class="again" @click="emit('restart')">
+      <button v-if="restartable" type="button" class="again" @click="emit('restart')">
         Practice again <span aria-hidden="true">↻</span>
       </button>
       <RouterLink :to="{ name: 'scenarios' }" class="all">All scenarios</RouterLink>

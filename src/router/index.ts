@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import PracticeView from '../views/PracticeView.vue'
 import { auth } from '@/firebase'
 import { authReady, onSessionLost, useAuth } from '@/auth/useAuth'
+import { localDateKey } from '@/data/dates'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -35,6 +36,31 @@ const router = createRouter({
           name: 'practice',
           component: PracticeView,
           props: true,
+        },
+      ],
+    },
+    {
+      // Daily challenges: today's at /daily, earlier days replayed at /daily/:date
+      path: '/daily',
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'daily',
+          component: () => import('../views/DailyView.vue'),
+        },
+        {
+          path: 'archive',
+          name: 'daily-archive',
+          component: () => import('../views/DailyArchiveView.vue'),
+        },
+        {
+          path: ':date',
+          name: 'daily-replay',
+          component: () => import('../views/DailyView.vue'),
+          props: true,
+          // Today's challenge is the official one, not a replay
+          beforeEnter: (to) => (to.params.date === localDateKey() ? { name: 'daily' } : true),
         },
       ],
     },
