@@ -7,6 +7,9 @@ import ModeSwitch from '@/components/conversation/ModeSwitch.vue'
 import FeedbackCard from '@/components/conversation/FeedbackCard.vue'
 import ScenarioSummary from '@/components/conversation/ScenarioSummary.vue'
 import { getScenario } from '@/data/scenarios'
+import { saveDailyResult } from '@/data/daily'
+import { formatDateKey } from '@/data/dates'
+import { useAuth } from '@/auth/useAuth'
 import { evaluateReply, type ReplyEvaluation } from '@/ai/evaluateReply'
 import { isAbort, NavigatorError } from '@/ai/navigator'
 import type { PracticeMode, Scenario, SubmittedReply } from '@/types/scenario'
@@ -16,7 +19,13 @@ import type { PracticeMode, Scenario, SubmittedReply } from '@/types/scenario'
 // A scenario has one or more rounds. When a reply is sent, the AI coach grades it and the feedback
 // card appears under the note; its Continue button moves on to the next round. After the last
 // round, a summary card shows every round's grade.
-const props = defineProps<{ id: string }>()
+// DailyView also uses this page for daily challenges, passing `daily`. An official (today's)
+// challenge saves its result once when finished and can't be restarted; a replay saves nothing.
+const props = defineProps<{
+  id: string
+  daily?: { date: string; official: boolean }
+}>()
+const { user } = useAuth()
 
 const scenario = ref<Scenario | null>(null)
 const loadState = ref<'loading' | 'ready' | 'error'>('loading')
@@ -75,6 +84,41 @@ const roundCount = computed(() => scenario.value?.rounds.length ?? 0)
 const finished = computed(() => roundCount.value > 0 && round.value >= roundCount.value)
 /** "01", "02", ... shown large in the right-hand column */
 const number = computed(() => String(scenario.value?.order ?? 1).padStart(2, '0'))
+
+const back = computed(() =>
+  !props.daily
+    ? { to: { name: 'scenarios' }, label: 'All scenarios' }
+    : props.daily.official
+      ? { to: { name: 'dashboard' }, label: 'Dashboard' }
+      : { to: { name: 'daily-archive' }, label: 'Past challenges' },
+)
+const dailyLabel = computed(() =>
+  props.daily
+    ? `${props.daily.official ? 'Daily challenge' : 'Replay'} · ${formatDateKey(props.daily.date)}`
+    : '',
+)
+
+// Official daily challenge: save the result once the last round is done
+const saveState = ref<'idle' | 'saving' | 'saved' | 'duplicate' | 'error'>('idle')
+
+async function saveDaily() {
+  const uid = user.value?.uid
+  if (!props.daily?.official || !scenario.value || !uid) return
+  saveState.value = 'saving'
+  try {
+    const { duplicate } = await saveDailyResult(
+      uid,
+      props.daily.date,
+      scenario.value.id,
+      history.value,
+      results.value,
+    )
+    saveState.value = duplicate ? 'duplicate' : 'saved'
+  } catch (err) {
+    console.error('Saving the daily challenge result failed:', err)
+    saveState.value = 'error'
+  }
+}
 
 function errorMessage(err: unknown): string {
   if (err instanceof NavigatorError && err.status === 401) {
@@ -146,6 +190,9 @@ watch(mode, () => {
   controller?.abort()
   evalState.value = 'idle'
 })
+watch(finished, (done) => {
+  if (done) void saveDaily()
+})
 // Opening another scenario starts fresh
 watch(
   () => props.id,
@@ -163,8 +210,9 @@ onBeforeUnmount(() => controller?.abort())
     <!-- one white panel filling the screen: brief | phone | feedback -->
     <div class="panel">
       <div class="top">
-        <RouterLink :to="{ name: 'scenarios' }" class="back">← All scenarios</RouterLink>
+        <RouterLink :to="back.to" class="back">← {{ back.label }}</RouterLink>
         <ModeSwitch v-model="mode" class="mode" />
+        <p v-if="daily" class="eyebrow daily-label">{{ dailyLabel }}</p>
       </div>
       <p v-if="loadState === 'loading'" class="status">
         <span class="spinner"></span> Loading scenario…
@@ -202,8 +250,29 @@ onBeforeUnmount(() => controller?.abort())
                 v-if="finished"
                 key="summary"
                 :results="results"
+                :restartable="!daily?.official"
+                :eyebrow="daily?.official ? 'Daily challenge complete' : undefined"
                 @restart="resetRounds"
-              />
+              >
+                <div v-if="daily?.official" class="daily-note" role="status">
+                  <p v-if="saveState === 'saving'">
+                    <span class="spinner"></span> Saving your result…
+                  </p>
+                  <p v-else-if="saveState === 'saved'">
+                    Saved as today's result. Come back tomorrow to keep your streak going.
+                  </p>
+                  <p v-else-if="saveState === 'duplicate'">
+                    You already finished today's challenge, so your first result stands.
+                  </p>
+                  <template v-else-if="saveState === 'error'">
+                    <p class="alert alert-error">Your result couldn't be saved.</p>
+                    <button type="button" class="btn" @click="saveDaily">Try again</button>
+                  </template>
+                </div>
+                <p v-else-if="daily" class="daily-note">
+                  Replays don't count toward your daily results or streak.
+                </p>
+              </ScenarioSummary>
               <FeedbackCard
                 v-else-if="evalState !== 'idle'"
                 key="feedback"
@@ -275,6 +344,23 @@ onBeforeUnmount(() => controller?.abort())
 }
 .back:hover {
   color: var(--navy);
+}
+.daily-label {
+  justify-self: end;
+  margin: 0;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.daily-note {
+  margin-top: 18px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.daily-note p {
+  margin: 0;
+}
+.daily-note .btn {
+  margin-top: 10px;
 }
 /* a wide switch, so it reads as the main control above the phone */
 .mode {

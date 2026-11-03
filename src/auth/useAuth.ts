@@ -12,7 +12,7 @@ import {
   type User,
 } from 'firebase/auth'
 import { auth, googleProvider } from '@/firebase'
-import { ensureUserProfile } from '@/data/users'
+import { ensureUserProfile, hasAdminProfile } from '@/data/users'
 
 const user = shallowRef<User | null>(null)
 const isAdmin = ref(false)
@@ -30,12 +30,15 @@ export function onSessionLost(handler: () => void) {
   sessionLostHandler = handler
 }
 
-// The admin role is a custom claim set by scripts/set-admin.mjs; it can't be set from the client.
-async function readAdminClaim(next: User | null): Promise<boolean> {
+// The admin role is `admin: true` on the user's Firestore profile, set in the Firebase console
+// (the security rules stop members from setting it), or the older custom claim set by
+// scripts/set-admin.mjs. It is read again on every page load, so a reload picks up a change.
+async function readAdminRole(next: User | null): Promise<boolean> {
   if (!next) return false
   try {
     const result = await getIdTokenResult(next)
-    return result.claims.admin === true
+    if (result.claims.admin === true) return true
+    return await hasAdminProfile(next.uid)
   } catch {
     return false
   }
@@ -43,7 +46,7 @@ async function readAdminClaim(next: User | null): Promise<boolean> {
 
 onIdTokenChanged(auth, async (next) => {
   // Work out the role first so nothing ever sees a signed-in user with a stale role.
-  const admin = await readAdminClaim(next)
+  const admin = await readAdminRole(next)
 
   const wasSignedIn = user.value !== null
   isAdmin.value = admin

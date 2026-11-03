@@ -3,10 +3,12 @@ import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { FirebaseError } from 'firebase/app'
 import { listScenarios } from '@/data/scenarios'
+import { useAuth } from '@/auth/useAuth'
 import type { Scenario } from '@/types/scenario'
 
 // Scenario list (/practice). One lime panel: a large "Scenarios" title on the left and a
 // numbered list on the right, rows separated by hairlines. Each row opens /practice/:id.
+const { isSignedIn } = useAuth()
 const scenarios = ref<Scenario[]>([])
 const loadState = ref<'loading' | 'ready' | 'error'>('loading')
 const loadError = ref('')
@@ -40,6 +42,9 @@ onMounted(load)
         <p v-if="loadState === 'ready' && scenarios.length" class="count">
           {{ scenarios.length }} conversations to practice
         </p>
+        <RouterLink v-if="isSignedIn" :to="{ name: 'daily' }" class="daily">
+          Today's daily challenge <span aria-hidden="true">→</span>
+        </RouterLink>
         <!-- the logo, large, in the corner (decorative) -->
         <svg class="mark" viewBox="-5 -3 110 106" aria-hidden="true">
           <path
@@ -121,6 +126,19 @@ h1 {
   margin: 18px 0 0;
   font-size: 17px;
   color: var(--ink-soft);
+}
+.daily {
+  align-self: start;
+  margin-top: 22px;
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  background: var(--navy);
+  color: var(--lime);
+  font-weight: 600;
+  text-decoration: none;
+}
+.daily:hover {
+  background: var(--navy-soft);
 }
 .mark {
   width: 120px;
