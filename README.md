@@ -68,6 +68,7 @@ Every day, all members get the same scenario as the daily challenge (`/daily`, a
 - A date with nothing scheduled falls back to the scenario list (scenarios take turns in their `order`), so every date always has a challenge.
 - `users/{uid}/dailyResults/{YYYY-MM-DD}` is a member's official result. The security rules only allow creating it, so each challenge counts once and the result page is shown afterwards.
 - Streaks are worked out from those results (`src/data/streaks.ts`); missing a day resets the streak.
+- Sending the first reply of today's challenge creates `users/{uid}/dailyStarts/{YYYY-MM-DD}` (also create-only). A challenge started but not finished by midnight is **missed**: it saves no result, so the streak resets. If the page is open at midnight it shows "Time's up" and moves on to the new day's challenge, the dashboard reminds members to finish a started challenge, and the archive shows those days as "Missed" instead of "Not played".
 - `/daily/archive` lists past challenges. Replaying one saves nothing, so official scores and streaks don't change.
 
 Dates are in the member's own time zone. **After pulling these changes, publish `firestore.rules` in the Firebase console** (Firestore → Rules), otherwise the real database rejects the daily challenge writes.

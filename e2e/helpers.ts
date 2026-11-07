@@ -98,6 +98,16 @@ export async function deleteDoc(path: string) {
   if (!res.ok) throw new Error(`Deleting ${path} failed: ${res.status} ${await res.text()}`)
 }
 
+/** Reads a Firestore document as the owner (skipping the security rules); null if it doesn't exist. */
+export async function readDocFields(path: string): Promise<Record<string, unknown> | null> {
+  const res = await fetch(`${documentsUrl()}/${path}`, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error(`Reading ${path} failed: ${res.status} ${await res.text()}`)
+  return ((await res.json()) as { fields?: Record<string, unknown> }).fields ?? {}
+}
+
 /** A date as "YYYY-MM-DD" in local time, like the app's localDateKey(); `offset` is in days. */
 export function dateKey(offset = 0) {
   const d = new Date()

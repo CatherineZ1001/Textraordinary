@@ -2,7 +2,8 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuth } from '@/auth/useAuth'
-import { listDailyChallenges, listDailyResults } from '@/data/daily'
+import { listDailyChallenges, listDailyResults, listDailyStarts } from '@/data/daily'
+import { dailyDayStatus } from '@/data/dailyStatus'
 import { listScenarios } from '@/data/scenarios'
 import { addDays, formatDateKey, localDateKey } from '@/data/dates'
 import type { DailyChallenge, DailyResult } from '@/types/daily'
@@ -10,6 +11,7 @@ import type { Scenario } from '@/types/scenario'
 
 // Past daily challenges (PBI 22), newest first, with the member's official score for each day.
 // Replaying one opens /daily/:date, which saves nothing, so official scores and streaks don't change.
+// A day the member started but didn't finish shows as missed (PBI 19), one never started as not played.
 const DAYS = 30
 const { user } = useAuth()
 const today = localDateKey()
@@ -17,6 +19,7 @@ const today = localDateKey()
 const challenges = ref<DailyChallenge[]>([])
 const scenarios = ref(new Map<string, Scenario>())
 const results = ref(new Map<string, DailyResult>())
+const starts = ref(new Set<string>())
 const loadState = ref<'loading' | 'ready' | 'error'>('loading')
 
 async function load() {
@@ -24,11 +27,13 @@ async function load() {
   if (!uid) return
   loadState.value = 'loading'
   try {
-    const [past, all, mine] = await Promise.all([
+    const [past, all, mine, started] = await Promise.all([
       listDailyChallenges(addDays(today, -DAYS), addDays(today, -1)),
       listScenarios(),
       listDailyResults(uid),
+      listDailyStarts(uid),
     ])
+    starts.value = started
     challenges.value = past.reverse()
     scenarios.value = new Map(all.map((s) => [s.id, s]))
     results.value = new Map(mine.map((r) => [r.date, r]))
@@ -47,6 +52,10 @@ const rows = computed(() =>
       // the scenario they actually played, in case the schedule changed afterwards
       scenario: scenarios.value.get(result?.scenarioId ?? c.scenarioId) ?? null,
       result,
+      status: dailyDayStatus(c.date, today, {
+        completed: result !== null,
+        started: starts.value.has(c.date),
+      }),
     }
   }),
 )
@@ -61,7 +70,7 @@ onMounted(load)
         <h1>Past challenges</h1>
         <p class="lede">
           Replay any earlier daily challenge for practice. Replays don't change your official scores
-          or your streak.
+          or your streak. A challenge you started but didn't finish that day counts as missed.
         </p>
         <RouterLink :to="{ name: 'daily' }" class="today">Today's challenge →</RouterLink>
       </header>
@@ -92,7 +101,9 @@ onMounted(load)
               <span class="date">{{ formatDateKey(row.date) }}</span>
               <span class="title">{{ row.scenario?.title ?? 'Scenario removed' }}</span>
               <span class="score" :class="{ missed: !row.result }">
-                {{ row.result ? `${row.result.averageScore ?? '—'}/10` : 'Not played' }}
+                <template v-if="row.result">{{ row.result.averageScore ?? '—' }}/10</template>
+                <template v-else-if="row.status === 'missed'">Missed</template>
+                <template v-else>Not played</template>
               </span>
               <RouterLink
                 v-if="row.scenario"
