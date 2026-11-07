@@ -41,6 +41,45 @@ service cloud.firestore {
       return id is string && exists(/databases/$(database)/documents/scenarios/$(id));
     }
 
+    // Attempt history (PBI 10, src/data/attempts.ts). Only the newest round is checked in
+    // detail: earlier rounds were checked when they were added and can't change afterwards.
+    function validAttemptRound(r) {
+      return r is map
+        && r.keys().hasOnly(['mode', 'optionId', 'text', 'score', 'verdict', 'toneMatch',
+          'strengths', 'improvements', 'suggestedRewrite'])
+        && r.mode in ['choose', 'write']
+        && (r.optionId == null || r.optionId is string)
+        && r.text is string && r.text.size() > 0 && r.text.size() <= 2000
+        && (r.score == null || (r.score is number && r.score >= 1 && r.score <= 10))
+        && (r.verdict == null || (r.verdict is string && r.verdict.size() <= 200))
+        && (r.toneMatch == null || r.toneMatch in ['on-target', 'close', 'off'])
+        && r.strengths is list && r.strengths.size() <= 3
+        && r.improvements is list && r.improvements.size() <= 3
+        && r.suggestedRewrite is string && r.suggestedRewrite.size() <= 2000;
+    }
+
+    function validAttempt(d) {
+      return d.keys().hasOnly(['scenarioId', 'scenarioTitle', 'category', 'source', 'dailyDate',
+          'mode', 'roundCount', 'rounds', 'averageScore', 'status', 'startedAt', 'updatedAt',
+          'completedAt'])
+        && d.scenarioTitle is string && d.scenarioTitle.size() <= 200
+        && d.category is string && d.category.size() <= 40
+        && d.source in ['practice', 'daily', 'replay']
+        && (d.source == 'practice'
+          ? d.dailyDate == null
+          : (d.dailyDate is string && d.dailyDate.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')))
+        && d.mode in ['choose', 'write', 'mixed']
+        && d.roundCount is int && d.roundCount >= 1 && d.roundCount <= 20
+        && d.rounds is list && d.rounds.size() >= 1 && d.rounds.size() <= d.roundCount
+        && validAttemptRound(d.rounds[d.rounds.size() - 1])
+        && (d.averageScore == null
+          || (d.averageScore is number && d.averageScore >= 1 && d.averageScore <= 10))
+        // complete exactly when every round is there, with the time it was completed
+        && d.status == (d.rounds.size() == d.roundCount ? 'completed' : 'in-progress')
+        && (d.status == 'completed' ? d.completedAt == request.time : d.completedAt == null)
+        && d.updatedAt == request.time;
+    }
+
     // Daily challenge schedule: one scenario per date (src/data/daily.ts), set by administrators on
     // the admin page. Dates with no document use an automatic pick from the scenario list.
     match /dailyChallenges/{date} {
@@ -105,6 +144,30 @@ service cloud.firestore {
           && request.resource.data.completedAt == request.time;
 
         allow update, delete: if false;
+      }
+
+      // Attempt history (PBI 10): one document per attempt, in any practice mode, saved after
+      // each round. A member can only add rounds to their own unfinished attempts; earlier rounds,
+      // finished attempts and the scenario they belong to can't be changed, and nothing is deleted.
+      match /attempts/{attemptId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+
+        allow create: if request.auth != null
+          && request.auth.uid == uid
+          && validAttempt(request.resource.data)
+          && scenarioExists(request.resource.data.scenarioId)
+          && request.resource.data.startedAt == request.time;
+
+        allow update: if request.auth != null
+          && request.auth.uid == uid
+          && resource.data.status == 'in-progress'
+          && validAttempt(request.resource.data)
+          && request.resource.data.diff(resource.data).unchangedKeys().hasAll(['scenarioId',
+            'scenarioTitle', 'category', 'source', 'dailyDate', 'roundCount', 'startedAt'])
+          && request.resource.data.rounds.size() > resource.data.rounds.size()
+          && request.resource.data.rounds[0:resource.data.rounds.size()] == resource.data.rounds;
+
+        allow delete: if false;
       }
     }
   }

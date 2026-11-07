@@ -8,6 +8,7 @@ import FeedbackCard from '@/components/conversation/FeedbackCard.vue'
 import ScenarioSummary from '@/components/conversation/ScenarioSummary.vue'
 import { getScenario } from '@/data/scenarios'
 import { saveDailyResult } from '@/data/daily'
+import { recordAttempt, type AttemptRecorder } from '@/data/attempts'
 import { formatDateKey } from '@/data/dates'
 import { useAuth } from '@/auth/useAuth'
 import { evaluateReply, type ReplyEvaluation } from '@/ai/evaluateReply'
@@ -21,6 +22,7 @@ import type { PracticeMode, Scenario, SubmittedReply } from '@/types/scenario'
 // round, a summary card shows every round's grade.
 // DailyView also uses this page for daily challenges, passing `daily`. An official (today's)
 // challenge saves its result once when finished and can't be restarted; a replay saves nothing.
+// Every attempt, in any mode, is also saved to the member's attempt history after each round (PBI 10).
 const props = defineProps<{
   id: string
   daily?: { date: string; official: boolean }
@@ -120,6 +122,29 @@ async function saveDaily() {
   }
 }
 
+// Attempt history (PBI 10): signed-in members' attempts are saved after every round
+let recorder: AttemptRecorder | null = null
+const historyState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
+
+async function saveHistory() {
+  const uid = user.value?.uid
+  if (!uid || !scenario.value || history.value.length === 0) return
+  recorder ??= recordAttempt({
+    uid,
+    scenario: scenario.value,
+    source: !props.daily ? 'practice' : props.daily.official ? 'daily' : 'replay',
+    dailyDate: props.daily?.date,
+  })
+  historyState.value = 'saving'
+  try {
+    await recorder.save(history.value, results.value)
+    historyState.value = 'saved'
+  } catch (err) {
+    console.error('Saving the attempt to your history failed:', err)
+    historyState.value = 'error'
+  }
+}
+
 function errorMessage(err: unknown): string {
   if (err instanceof NavigatorError && err.status === 401) {
     return 'No NaviGator API key was found. Set the NAVIGATOR_API_KEY environment variable and restart the dev server.'
@@ -172,6 +197,7 @@ function continueRound() {
   evalState.value = 'idle'
   selectedId.value = null
   round.value++
+  void saveHistory()
 }
 
 function resetRounds() {
@@ -183,6 +209,9 @@ function resetRounds() {
   history.value = []
   results.value = []
   attempt.value++
+  // "Practice again" is a new attempt in the history
+  recorder = null
+  historyState.value = 'idle'
 }
 
 // Switching modes clears the current round's sent reply, so clear its feedback too
@@ -272,6 +301,22 @@ onBeforeUnmount(() => controller?.abort())
                 <p v-else-if="daily" class="daily-note">
                   Replays don't count toward your daily results or streak.
                 </p>
+                <div class="history-note" role="status">
+                  <p v-if="!user">
+                    <RouterLink :to="{ name: 'login', query: { redirect: $route.fullPath } }"
+                      >Sign in</RouterLink
+                    >
+                    to keep a history of your practice.
+                  </p>
+                  <p v-else-if="historyState === 'saving'">
+                    <span class="spinner"></span> Saving to your history…
+                  </p>
+                  <p v-else-if="historyState === 'saved'">Saved to your practice history.</p>
+                  <template v-else-if="historyState === 'error'">
+                    <p class="alert alert-error">This attempt couldn't be saved to your history.</p>
+                    <button type="button" class="btn" @click="saveHistory">Try again</button>
+                  </template>
+                </div>
               </ScenarioSummary>
               <FeedbackCard
                 v-else-if="evalState !== 'idle'"
@@ -360,6 +405,18 @@ onBeforeUnmount(() => controller?.abort())
   margin: 0;
 }
 .daily-note .btn {
+  margin-top: 10px;
+}
+.history-note {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.history-note p {
+  margin: 0;
+}
+.history-note .btn {
   margin-top: 10px;
 }
 /* a wide switch, so it reads as the main control above the phone */
