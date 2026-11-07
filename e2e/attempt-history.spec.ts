@@ -80,7 +80,9 @@ test('TC-AH-01: a finished practice attempt is saved with its reply, score, feed
 
   // "Practice again" is a separate attempt
   await page.getByRole('button', { name: /Practice again/ }).click()
-  await playOneRound(page, SCENARIO.options.D)
+  // The phone was already unlocked once, so the messages play again without the lock screen
+  await page.getByRole('button', { name: SCENARIO.options.D }).click()
+  await page.getByRole('button', { name: 'Send reply' }).click()
   await page.getByRole('button', { name: 'Finish scenario' }).click()
   await expect(page.getByText('Saved to your practice history.')).toBeVisible()
   const again = await readCollection<Saved>(`users/${user.uid}/attempts`)
