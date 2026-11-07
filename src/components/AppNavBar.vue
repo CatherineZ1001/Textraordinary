@@ -12,7 +12,7 @@ const { user, ready, isAdmin, logout } = useAuth()
 
 // On the practice and daily challenge views the bar turns powder blue, framing their white panel
 const tinted = computed(() =>
-  ['practice', 'daily', 'daily-replay', 'daily-archive'].includes(String(route.name)),
+  ['practice', 'daily', 'daily-replay', 'daily-archive', 'history'].includes(String(route.name)),
 )
 // On the scenario list the bar is plain white with no divider, blending into that page's white frame
 const plain = computed(() => route.name === 'scenarios')
@@ -28,6 +28,7 @@ const links = computed(() => [
   ...(user.value
     ? [
         { to: '/daily', label: 'Daily' },
+        { to: '/history', label: 'History' },
         { to: '/dashboard', label: 'Dashboard' },
         { to: '/profile', label: 'Profile' },
       ]

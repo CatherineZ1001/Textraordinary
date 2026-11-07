@@ -78,6 +78,7 @@ Every time a signed-in member plays a scenario, the attempt is saved to `users/{
 
 - Each attempt stores the scenario, the mode (`choose`, `write`, or `mixed` if the member switched), and for each round the reply, score and the coach's feedback (verdict, tone match, strengths, improvements, suggested rewrite), plus the average score and when it was started and completed.
 - It's saved after every round, so an attempt the member leaves halfway is kept as `in-progress`. "Practice again" starts a new attempt.
+- Members see their history at `/history` (the **History** link in the nav bar): date, scenario, mode and score for each attempt, filtered by the last 7 days, last 30 days, all time or a custom date range. Opening an attempt shows each reply and the coach's feedback.
 - The security rules let a member read only their own history, and only add rounds to their own unfinished attempts. Earlier rounds and finished attempts can't be changed, and nothing can be deleted.
 
 **Publish `firestore.rules` in the Firebase console after pulling this**, otherwise the real database rejects the history writes (the practice page then shows "couldn't be saved to your history").

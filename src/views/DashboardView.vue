@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import DailyChallengeCard from '@/components/daily/DailyChallengeCard.vue'
 import { useAuth } from '@/auth/useAuth'
 
@@ -11,7 +12,8 @@ const name = computed(() => user.value?.displayName || user.value?.email || 'the
   <main class="dashboard">
     <h1>Welcome, {{ name }}!</h1>
     <p class="lede">
-      This is your member dashboard. Texting scenarios and feedback will appear here.
+      This is your member dashboard. Every scenario you play is saved to your
+      <RouterLink :to="{ name: 'history' }">practice history</RouterLink>.
     </p>
     <DailyChallengeCard />
   </main>
