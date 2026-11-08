@@ -167,3 +167,57 @@ export async function mockCoach(page: Page, response: CoachGrade | 'down') {
   })
   return coach
 }
+
+/** Turns a Firestore REST value ({ stringValue: 'x' }, { mapValue: ... }) into plain JSON */
+function plain(value: Record<string, unknown>): unknown {
+  if ('nullValue' in value) return null
+  if ('integerValue' in value) return Number(value.integerValue)
+  if ('doubleValue' in value) return Number(value.doubleValue)
+  if ('arrayValue' in value) {
+    const values = (value.arrayValue as { values?: Record<string, unknown>[] }).values ?? []
+    return values.map(plain)
+  }
+  if ('mapValue' in value) {
+    const fields = (value.mapValue as { fields?: Record<string, Record<string, unknown>> }).fields
+    return plainFields(fields ?? {})
+  }
+  return Object.values(value)[0] // stringValue, booleanValue, timestampValue
+}
+
+function plainFields(fields: Record<string, Record<string, unknown>>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, plain(v)]))
+}
+
+/**
+ * Reads every document in a Firestore collection through the emulator's REST API, as plain
+ * objects with their `id`. With no token it reads as the owner (skipping the rules); with a
+ * user's ID token the rules apply and `status` is 403 if they're not allowed.
+ */
+export async function readCollection<T extends object = Record<string, unknown>>(
+  path: string,
+  idToken = 'owner',
+) {
+  const res = await fetch(`${documentsUrl()}/${path}`, {
+    headers: { Authorization: `Bearer ${idToken}` },
+  })
+  const body = (await res.json()) as {
+    documents?: { name: string; fields?: Record<string, Record<string, unknown>> }[]
+  }
+  const docs = (body.documents ?? []).map(
+    (d) =>
+      ({
+        ...plainFields(d.fields ?? {}),
+        id: d.name.split('/').pop()!,
+      }) as T & { id: string },
+  )
+  return { status: res.status, docs }
+}
+
+/** Tries to delete a document as a member; returns the HTTP status (403 if the rules refuse). */
+export async function deleteDocAs(path: string, idToken: string): Promise<number> {
+  const res = await fetch(`${documentsUrl()}/${path}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${idToken}` },
+  })
+  return res.status
+}

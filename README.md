@@ -72,6 +72,16 @@ Every day, all members get the same scenario as the daily challenge (`/daily`, a
 
 Dates are in the member's own time zone. **After pulling these changes, publish `firestore.rules` in the Firebase console** (Firestore → Rules), otherwise the real database rejects the daily challenge writes.
 
+## Attempt history
+
+Every time a signed-in member plays a scenario, the attempt is saved to `users/{uid}/attempts/{attemptId}` (code in `src/data/attempts.ts`, shape in `src/types/attempt.ts`). It's the same structure for every practice mode: picked or written replies, regular practice, daily challenges (`source: 'daily'`) and their replays (`source: 'replay'`).
+
+- Each attempt stores the scenario, the mode (`choose`, `write`, or `mixed` if the member switched), and for each round the reply, score and the coach's feedback (verdict, tone match, strengths, improvements, suggested rewrite), plus the average score and when it was started and completed.
+- It's saved after every round, so an attempt the member leaves halfway is kept as `in-progress`. "Practice again" starts a new attempt.
+- The security rules let a member read only their own history, and only add rounds to their own unfinished attempts. Earlier rounds and finished attempts can't be changed, and nothing can be deleted.
+
+**Publish `firestore.rules` in the Firebase console after pulling this**, otherwise the real database rejects the history writes (the practice page then shows "couldn't be saved to your history").
+
 ## Tests
 
 End-to-end tests in `e2e/` use [Playwright](https://playwright.dev) to click through the app like a user. Each test is named after its manual test case (`TC-UA-01`, `TC-SR-01`, `TC-CR-01`).
