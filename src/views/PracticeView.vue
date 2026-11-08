@@ -7,9 +7,9 @@ import ModeSwitch from '@/components/conversation/ModeSwitch.vue'
 import FeedbackCard from '@/components/conversation/FeedbackCard.vue'
 import ScenarioSummary from '@/components/conversation/ScenarioSummary.vue'
 import { getScenario } from '@/data/scenarios'
-import { saveDailyResult } from '@/data/daily'
+import { markDailyStarted, saveDailyResult } from '@/data/daily'
 import { recordAttempt, type AttemptRecorder } from '@/data/attempts'
-import { formatDateKey } from '@/data/dates'
+import { formatDateKey, localDateKey } from '@/data/dates'
 import { useAuth } from '@/auth/useAuth'
 import { evaluateReply, type ReplyEvaluation } from '@/ai/evaluateReply'
 import { isAbort, NavigatorError } from '@/ai/navigator'
@@ -23,10 +23,13 @@ import type { PracticeMode, Scenario, SubmittedReply } from '@/types/scenario'
 // DailyView also uses this page for daily challenges, passing `daily`. An official (today's)
 // challenge saves its result once when finished and can't be restarted; a replay saves nothing.
 // Every attempt, in any mode, is also saved to the member's attempt history after each round (PBI 10).
+// An official challenge records when it's started (`started`), and if its day ends before it's
+// finished it isn't saved (`expired`): it counts as missed (PBI 19).
 const props = defineProps<{
   id: string
   daily?: { date: string; official: boolean }
 }>()
+const emit = defineEmits<{ started: []; expired: [] }>()
 const { user } = useAuth()
 
 const scenario = ref<Scenario | null>(null)
@@ -106,6 +109,11 @@ const saveState = ref<'idle' | 'saving' | 'saved' | 'duplicate' | 'error'>('idle
 async function saveDaily() {
   const uid = user.value?.uid
   if (!props.daily?.official || !scenario.value || !uid) return
+  // Finished after midnight (say, the laptop was asleep): the day is over, so it's missed
+  if (localDateKey() !== props.daily.date) {
+    emit('expired')
+    return
+  }
   saveState.value = 'saving'
   try {
     const { duplicate } = await saveDailyResult(
@@ -179,7 +187,24 @@ async function grade(reply: SubmittedReply) {
   }
 }
 
+let startRecorded = false
+
+/** The first reply of an official daily challenge marks it as started */
+async function recordDailyStart() {
+  const uid = user.value?.uid
+  if (startRecorded || !props.daily?.official || !scenario.value || !uid) return
+  startRecorded = true
+  emit('started')
+  try {
+    await markDailyStarted(uid, props.daily.date, scenario.value.id)
+  } catch (err) {
+    console.error('Recording the daily challenge start failed:', err)
+    startRecorded = false // try again with the next reply
+  }
+}
+
 function onSubmit(reply: SubmittedReply) {
+  void recordDailyStart()
   void grade(reply)
 }
 

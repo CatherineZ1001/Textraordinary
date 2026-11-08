@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import PracticeView from './PracticeView.vue'
 import ScenarioSummary from '@/components/conversation/ScenarioSummary.vue'
@@ -7,7 +7,7 @@ import StreakStat from '@/components/daily/StreakStat.vue'
 import { useAuth } from '@/auth/useAuth'
 import { getDailyChallenge, getDailyOverview } from '@/data/daily'
 import { getScenario } from '@/data/scenarios'
-import { formatDateKey, isDateKey, localDateKey } from '@/data/dates'
+import { formatDateKey, isDateKey, localDateKey, msUntilNextDay } from '@/data/dates'
 import type { Streak } from '@/data/streaks'
 import type { DailyResult } from '@/types/daily'
 import type { Scenario } from '@/types/scenario'
@@ -16,12 +16,14 @@ import type { Scenario } from '@/types/scenario'
 // /daily        today's challenge (PBI 14). Played once (PBI 15): after that it shows the saved result.
 // /daily/:date  replays a past day's challenge (PBI 22); nothing is saved, so scores and streaks
 //               stay as they were. The router sends today's date to /daily instead.
+// At midnight the page moves on to the new day. A challenge started but not finished by then is
+// missed (PBI 19): the page says so instead of letting it be finished late.
 const props = defineProps<{ date?: string }>()
 const { user } = useAuth()
 
-const today = localDateKey()
-const date = computed(() => props.date ?? today)
-const official = computed(() => date.value === today)
+const today = ref(localDateKey())
+const date = computed(() => props.date ?? today.value)
+const official = computed(() => date.value === today.value)
 
 const loadState = ref<'loading' | 'ready' | 'error'>('loading')
 const loadError = ref('')
@@ -29,6 +31,10 @@ const scenario = ref<Scenario | null>(null)
 /** Today's official result, once the member has finished it */
 const result = ref<DailyResult | null>(null)
 const streak = ref<Streak | null>(null)
+/** Whether the member has started today's challenge */
+const started = ref(false)
+/** The date of a challenge the day ran out on, while the "Time's up" panel shows */
+const missed = ref<string | null>(null)
 
 let loadId = 0
 
@@ -38,15 +44,16 @@ async function load() {
   try {
     const uid = user.value?.uid
     if (!uid) throw new Error('Not signed in')
-    if (!isDateKey(date.value) || date.value > today) {
+    if (!isDateKey(date.value) || date.value > today.value) {
       return fail(current, "There's no daily challenge for that date.")
     }
 
     if (official.value) {
-      const overview = await getDailyOverview(uid, today)
+      const overview = await getDailyOverview(uid, today.value)
       if (current !== loadId) return
       scenario.value = overview.scenario
       result.value = overview.result
+      started.value = overview.started
       streak.value = overview.streak
     } else {
       const challenge = await getDailyChallenge(date.value)
@@ -82,18 +89,64 @@ const resultRounds = computed(() =>
 )
 
 watch(date, load, { immediate: true })
+
+/** The day ran out on today's challenge: show "Time's up" and load the new day behind it */
+function expire() {
+  if (official.value && !result.value) missed.value = date.value
+  started.value = false
+  today.value = localDateKey() // changes `date`, which loads the new day's challenge
+}
+
+let midnightTimer: ReturnType<typeof setTimeout> | undefined
+
+function waitForMidnight() {
+  clearTimeout(midnightTimer)
+  midnightTimer = setTimeout(onNewDay, msUntilNextDay() + 500)
+}
+
+function onNewDay() {
+  if (localDateKey() !== today.value) {
+    if (started.value) expire()
+    else today.value = localDateKey()
+  }
+  waitForMidnight()
+}
+
+/** The practice page finished the challenge after its day was over */
+function onExpired() {
+  expire()
+  waitForMidnight()
+}
+
+waitForMidnight()
+onBeforeUnmount(() => clearTimeout(midnightTimer))
 </script>
 
 <template>
   <PracticeView
-    v-if="loadState === 'ready' && scenario && !showResult"
+    v-if="loadState === 'ready' && scenario && !showResult && !missed"
     :id="scenario.id"
+    :key="date"
     :daily="{ date, official }"
+    @started="started = true"
+    @expired="onExpired"
   />
 
   <main v-else class="daily">
     <div class="panel">
-      <p v-if="loadState === 'loading'" class="status">
+      <!-- The day ended before the member finished its challenge -->
+      <div v-if="missed" class="status missed" role="alert">
+        <p class="eyebrow">Daily challenge · {{ formatDateKey(missed) }}</p>
+        <h1>Time's up</h1>
+        <p class="lede">
+          The day ended before you finished, so this challenge counts as missed. Today's challenge
+          is ready.
+        </p>
+        <button type="button" class="btn" @click="missed = null">Play today's challenge</button>
+        <p><RouterLink :to="{ name: 'daily-archive' }">Past challenges</RouterLink></p>
+      </div>
+
+      <p v-else-if="loadState === 'loading'" class="status">
         <span class="spinner"></span> Loading the daily challenge…
       </p>
 
@@ -190,6 +243,16 @@ h1 {
   gap: 8px 24px;
   margin-top: 28px;
   font-weight: 500;
+}
+
+.missed {
+  max-width: 520px;
+}
+.missed h1 {
+  color: var(--navy);
+}
+.missed .lede {
+  margin: 20px auto 28px;
 }
 
 @media (max-width: 860px) {

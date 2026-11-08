@@ -41,3 +41,9 @@ export function formatDateKey(
   const [y, m, d] = parts(key)
   return new Date(y, m - 1, d).toLocaleDateString(undefined, options)
 }
+
+/** Milliseconds from `now` until the next local midnight, when the date changes */
+export function msUntilNextDay(now = new Date()): number {
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+  return next.getTime() - now.getTime()
+}

@@ -27,6 +27,8 @@ import type { Scenario, SubmittedReply } from '@/types/scenario'
 // `order` (src/data/rotation.ts), so every date always has a challenge without anything being written.
 // A member's official result is users/{uid}/dailyResults/{YYYY-MM-DD}. The rules only allow
 // creating it, never changing it, so each day's challenge counts once (PBI 15).
+// users/{uid}/dailyStarts/{YYYY-MM-DD} records that the member started that day's challenge. A
+// start with no result by the end of the day is a missed challenge (PBI 19).
 
 /** Average of the graded rounds, to one decimal place; null if none were graded. */
 export function averageScore(results: readonly ({ score: number | null } | null)[]): number | null {
@@ -37,6 +39,7 @@ export function averageScore(results: readonly ({ score: number | null } | null)
 
 const challengeRef = (date: string) => doc(db, 'dailyChallenges', date)
 const resultRef = (uid: string, date: string) => doc(db, 'users', uid, 'dailyResults', date)
+const startRef = (uid: string, date: string) => doc(db, 'users', uid, 'dailyStarts', date)
 
 function toResult(snap: DocumentSnapshot): DailyResult {
   const data = snap.data() ?? {}
@@ -119,6 +122,21 @@ export async function listDailyResults(uid: string): Promise<DailyResult[]> {
   return snap.docs.map(toResult)
 }
 
+/** Records that the member started the official challenge for `date`. Only the first start is kept. */
+export async function markDailyStarted(uid: string, date: string, scenarioId: string) {
+  const ref = startRef(uid, date)
+  await runTransaction(db, async (tx) => {
+    if ((await tx.get(ref)).exists()) return
+    tx.set(ref, { scenarioId, startedAt: serverTimestamp() })
+  })
+}
+
+/** Every date whose official challenge the member started, finished or not. */
+export async function listDailyStarts(uid: string): Promise<Set<string>> {
+  const snap = await getDocs(collection(db, 'users', uid, 'dailyStarts'))
+  return new Set(snap.docs.map((d) => d.id))
+}
+
 /**
  * Saves the member's official result for `date`. If they already finished that day (say, in
  * another tab), nothing is written and the first result is returned with `duplicate: true`.
@@ -156,6 +174,8 @@ export interface DailyOverview {
   scenario: Scenario | null
   /** Today's official result, if the member has finished it */
   result: DailyResult | null
+  /** Whether the member has started today's challenge */
+  started: boolean
   streak: Streak
 }
 
@@ -164,13 +184,18 @@ export async function getDailyOverview(
   uid: string,
   today = localDateKey(),
 ): Promise<DailyOverview> {
-  const [challenge, results] = await Promise.all([getDailyChallenge(today), listDailyResults(uid)])
+  const [challenge, results, start] = await Promise.all([
+    getDailyChallenge(today),
+    listDailyResults(uid),
+    getDoc(startRef(uid, today)),
+  ])
   const result = results.find((r) => r.date === today) ?? null
   return {
     challenge,
     // After finishing, show the scenario they played, even if the schedule changed since
     scenario: await getScenario(result?.scenarioId ?? challenge.scenarioId),
     result,
+    started: start.exists(),
     streak: calculateStreak(
       results.map((r) => r.date),
       today,

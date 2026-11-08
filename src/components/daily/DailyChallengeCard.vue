@@ -7,7 +7,7 @@ import { getDailyOverview, type DailyOverview } from '@/data/daily'
 import { formatDateKey, localDateKey } from '@/data/dates'
 
 // The dashboard's entry point to today's daily challenge (PBI 14): the scenario, whether the
-// member has done it (with their score), their streak, and a link to past challenges.
+// member has done it (with their score) or started it, their streak, and a link to past challenges.
 const { user } = useAuth()
 
 const today = localDateKey()
@@ -54,6 +54,9 @@ onMounted(load)
           <p v-if="overview.result" class="done">
             Done for today ·
             <strong>{{ overview.result.averageScore ?? '—' }}/10</strong>
+          </p>
+          <p v-else-if="overview.started" class="done">
+            Started · finish it before midnight or it counts as missed
           </p>
           <RouterLink :to="{ name: 'daily' }" class="btn play">
             {{ overview.result ? 'See your result' : "Play today's challenge" }}
