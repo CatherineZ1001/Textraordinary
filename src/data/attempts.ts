@@ -1,15 +1,23 @@
 import {
   collection,
   doc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
   serverTimestamp,
   setDoc,
+  Timestamp,
   updateDoc,
+  where,
   type DocumentReference,
+  type QueryConstraint,
 } from 'firebase/firestore'
 import { db } from '@/firebase'
 import { averageScore } from './daily'
+import { addDays } from './dates'
 import type { ReplyEvaluation } from '@/ai/evaluateReply'
-import type { AttemptMode, AttemptRound, AttemptSource } from '@/types/attempt'
+import type { Attempt, AttemptMode, AttemptRound, AttemptSource } from '@/types/attempt'
 import type { Scenario, SubmittedReply } from '@/types/scenario'
 
 // Saves attempt history (PBI 10): users/{uid}/attempts/{attemptId}, one document per attempt.
@@ -111,4 +119,35 @@ export function recordAttempt(context: AttemptContext): AttemptRecorder {
       return ref?.id ?? null
     },
   }
+}
+
+/** At most this many attempts are listed at once, newest first */
+export const HISTORY_LIMIT = 200
+
+/** Midnight at the start of a "YYYY-MM-DD" date, in the member's time zone */
+function startOfDay(key: string): Timestamp {
+  const [y = 0, m = 1, d = 1] = key.split('-').map(Number)
+  return Timestamp.fromDate(new Date(y, m - 1, d))
+}
+
+/**
+ * The member's attempts, newest first (PBI 17). `from` and `to` ("YYYY-MM-DD", both included,
+ * in the member's time zone) limit it to attempts started on those days.
+ */
+export async function listAttempts(
+  uid: string,
+  range: { from?: string | null; to?: string | null } = {},
+): Promise<Attempt[]> {
+  const filters: QueryConstraint[] = []
+  if (range.from) filters.push(where('startedAt', '>=', startOfDay(range.from)))
+  if (range.to) filters.push(where('startedAt', '<', startOfDay(addDays(range.to, 1))))
+  const snap = await getDocs(
+    query(
+      collection(db, 'users', uid, 'attempts'),
+      ...filters,
+      orderBy('startedAt', 'desc'),
+      limit(HISTORY_LIMIT),
+    ),
+  )
+  return snap.docs.map((d) => ({ ...d.data(), id: d.id }) as Attempt)
 }

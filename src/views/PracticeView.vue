@@ -311,7 +311,10 @@ onBeforeUnmount(() => controller?.abort())
                   <p v-else-if="historyState === 'saving'">
                     <span class="spinner"></span> Saving to your history…
                   </p>
-                  <p v-else-if="historyState === 'saved'">Saved to your practice history.</p>
+                  <template v-else-if="historyState === 'saved'">
+                    <p>Saved to your practice history.</p>
+                    <p><RouterLink :to="{ name: 'history' }">See your history →</RouterLink></p>
+                  </template>
                   <template v-else-if="historyState === 'error'">
                     <p class="alert alert-error">This attempt couldn't be saved to your history.</p>
                     <button type="button" class="btn" @click="saveHistory">Try again</button>

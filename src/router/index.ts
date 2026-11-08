@@ -65,6 +65,13 @@ const router = createRouter({
       ],
     },
     {
+      // Practice history (PBI 17): the member's saved attempts, filtered by date
+      path: '/history',
+      name: 'history',
+      component: () => import('../views/HistoryView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue'),

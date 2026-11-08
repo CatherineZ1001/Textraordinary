@@ -221,3 +221,27 @@ export async function deleteDocAs(path: string, idToken: string): Promise<number
   })
   return res.status
 }
+
+/** Turns plain JSON into Firestore REST fields, for writeDoc. Dates become timestamps. */
+export function toFields(data: Record<string, unknown>): Record<string, unknown> {
+  const value = (v: unknown): Record<string, unknown> => {
+    if (v === null || v === undefined) return { nullValue: null }
+    if (v instanceof Date) return { timestampValue: v.toISOString() }
+    if (typeof v === 'string') return { stringValue: v }
+    if (typeof v === 'boolean') return { booleanValue: v }
+    if (typeof v === 'number') {
+      return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v }
+    }
+    if (Array.isArray(v)) return { arrayValue: { values: v.map(value) } }
+    return { mapValue: { fields: toFields(v as Record<string, unknown>) } }
+  }
+  return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, value(v)]))
+}
+
+/** Noon, local time, `offset` days from today: safely inside that date in any time zone */
+export function noonDaysAgo(days: number) {
+  const d = new Date()
+  d.setDate(d.getDate() - days)
+  d.setHours(12, 0, 0, 0)
+  return d
+}
