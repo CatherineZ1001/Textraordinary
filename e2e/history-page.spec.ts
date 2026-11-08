@@ -162,5 +162,6 @@ test('TC-AH-05: a scenario just played shows up in the history', async ({ page }
   await expect(rows).toHaveCount(1)
   await expect(rows.nth(0)).toContainText(SCENARIO.title)
   await expect(rows.nth(0)).toContainText('Pick a reply')
-  await expect(rows.nth(0)).toContainText('8/10')
+  // Picking the best reply always scores at least 9 (src/ai/evaluateReply.ts)
+  await expect(rows.nth(0)).toContainText('9/10')
 })
