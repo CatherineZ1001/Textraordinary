@@ -1,5 +1,4 @@
-import { initializeApp } from 'firebase-admin/app'
-import { getAuth } from 'firebase-admin/auth'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
 
 // Production stand-in for the dev server's /api/navigator proxy in vite.config.ts: netlify.toml
 // routes /api/navigator/chat/completions here, and this attaches the NaviGator key from the
@@ -11,8 +10,26 @@ const MODEL = process.env.VITE_NAVIGATOR_MODEL || 'gpt-oss-120b'
 /** Includes the reasoning tokens of models like gpt-oss, so leave room beyond the visible reply. */
 const MAX_TOKENS = 8192
 
-// Checking ID tokens only needs the project ID and Google's public keys, not a service account
-const auth = getAuth(initializeApp({ projectId: process.env.VITE_FIREBASE_PROJECT_ID }))
+const PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID
+
+// Firebase ID tokens are checked with jose as Firebase documents for third-party libraries
+// (https://firebase.google.com/docs/auth/admin/verify-id-tokens), rather than with firebase-admin,
+// whose jwks-rsa dependency require()s the ESM-only jose and crashes in Netlify's function runtime.
+// jose caches Google's public keys between requests.
+const googleKeys = createRemoteJWKSet(
+  new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com'),
+)
+
+async function verifyIdToken(idToken: string, projectId: string) {
+  const { payload } = await jwtVerify(idToken, googleKeys, {
+    algorithms: ['RS256'],
+    issuer: `https://securetoken.google.com/${projectId}`,
+    audience: projectId,
+  })
+  const now = Date.now() / 1000
+  if (!payload.sub) throw new Error('The ID token has no user.')
+  if (typeof payload.auth_time !== 'number' || payload.auth_time > now) throw new Error('Invalid sign-in time.')
+}
 
 // Same error shape as the OpenAI API, so the openai client in the browser reports the message
 const fail = (status: number, message: string) => Response.json({ error: { message } }, { status })
@@ -22,11 +39,12 @@ export default async (req: Request): Promise<Response> => {
 
   const apiKey = process.env.NAVIGATOR_API_KEY
   if (!apiKey) return fail(500, 'NAVIGATOR_API_KEY is not set on the server.')
+  if (!PROJECT_ID) return fail(500, 'VITE_FIREBASE_PROJECT_ID is not set on the server.')
 
   const idToken = req.headers.get('x-firebase-token')
   if (!idToken) return fail(401, 'Sign in to get AI feedback.')
   try {
-    await auth.verifyIdToken(idToken)
+    await verifyIdToken(idToken, PROJECT_ID)
   } catch {
     return fail(401, 'Your session has expired. Sign in again to get AI feedback.')
   }
