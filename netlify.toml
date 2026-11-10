@@ -2,6 +2,14 @@
   command = "npm run build"
   publish = "dist"
 
+# AI requests go to the function that attaches the NaviGator key (the dev server does this locally).
+# Netlify uses the first matching rule, so this must stay above the catch-all below.
+[[redirects]]
+  from = "/api/navigator/chat/completions"
+  to = "/.netlify/functions/navigator"
+  status = 200
+  force = true
+
 # Vue Router uses HTML5 history mode: serve index.html for any path that isn't a real file
 [[redirects]]
   from = "/*"

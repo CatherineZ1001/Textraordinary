@@ -14,6 +14,8 @@ const navigatorProxy = (apiKey: string | undefined): ProxyOptions => ({
   rewrite: (path) => path.replace(/^\/api\/navigator/, ''),
   configure: (proxy) => {
     proxy.on('proxyReq', (proxyReq) => {
+      // The sign-in token is only for the production proxy; NaviGator has no use for it
+      proxyReq.removeHeader('x-firebase-token')
       if (apiKey) proxyReq.setHeader('Authorization', `Bearer ${apiKey}`)
       else console.warn('[navigator] NAVIGATOR_API_KEY is not set; AI requests will fail.')
     })

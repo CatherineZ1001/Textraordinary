@@ -155,7 +155,10 @@ async function saveHistory() {
 
 function errorMessage(err: unknown): string {
   if (err instanceof NavigatorError && err.status === 401) {
-    return 'No NaviGator API key was found. Set the NAVIGATOR_API_KEY environment variable and restart the dev server.'
+    // Locally a 401 comes from NaviGator itself; in production the proxy uses it for a rejected sign-in
+    return import.meta.env.DEV
+      ? 'No NaviGator API key was found. Set the NAVIGATOR_API_KEY environment variable and restart the dev server.'
+      : 'Your session has expired. Sign in again to get AI feedback.'
   }
   if (err instanceof NavigatorError && err.status === 429) {
     return "You've hit the NaviGator usage limit. Wait a bit and try again."

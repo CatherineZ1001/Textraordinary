@@ -1,8 +1,10 @@
 import OpenAI from 'openai'
+import { auth } from '@/firebase'
 
 // Client for UF's NaviGator Toolkit, which exposes the OpenAI Chat Completions API.
-// Requests go through the /api/navigator proxy in vite.config.ts, which replaces the
-// Authorization header with the real key from the NAVIGATOR_API_KEY environment variable.
+// Requests go through a proxy that replaces the Authorization header with the real key from
+// the NAVIGATOR_API_KEY environment variable: the dev server's /api/navigator proxy in
+// vite.config.ts locally, and the Netlify Function in netlify/functions/navigator.ts in production.
 // The key below is only a placeholder, so dangerouslyAllowBrowser exposes no secret.
 // Never put the real key in browser code.
 
@@ -51,8 +53,13 @@ export function isAbort(err: unknown): boolean {
 
 /** Sends a conversation to the model and returns the text of its reply. */
 export async function chat(messages: ChatMessage[], options: ChatOptions = {}): Promise<string> {
+  // The production proxy (netlify/functions/navigator.ts) only serves signed-in users
+  const user = auth.currentUser
+  if (!user) throw new NavigatorError('Sign in to get AI feedback on your replies.')
+
   let completion: OpenAI.Chat.ChatCompletion
   try {
+    const idToken = await user.getIdToken()
     completion = await getClient().chat.completions.create(
       {
         model: options.model ?? DEFAULT_MODEL,
@@ -61,7 +68,7 @@ export async function chat(messages: ChatMessage[], options: ChatOptions = {}): 
         max_tokens: options.maxTokens,
         response_format: options.json ? { type: 'json_object' } : undefined,
       },
-      { signal: options.signal },
+      { signal: options.signal, headers: { 'X-Firebase-Token': idToken } },
     )
   } catch (err) {
     if (isAbort(err) || !(err instanceof OpenAI.APIError)) throw err
