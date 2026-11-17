@@ -84,6 +84,24 @@ Every time a signed-in member plays a scenario, the attempt is saved to `users/{
 
 **Publish `firestore.rules` in the Firebase console after pulling this**, otherwise the real database rejects the history writes (the practice page then shows "couldn't be saved to your history").
 
+## Managing scenarios
+
+Administrators add, edit, search and delete scenarios at the top of the admin page (`/admin/scenarios`). Code is in `src/components/admin/` and `src/data/scenarioDraft.ts`.
+
+- Search matches every word you type against the title, tone, context, contact and id; the category dropdown narrows it further.
+- The editor covers everything in a scenario: details, contact, and each round's messages and suggested replies (with the best one marked). Required fields are checked when you press Save, using the same rules as `scripts/seed-scenarios.mjs`; the first field to fix gets focus. Editing keeps existing message and reply ids, so members' saved history still lines up.
+- New scenarios get the next free `sc-NNN` id and, by default, the next `order`.
+- Deleting asks first. If the scenario is scheduled as an upcoming daily challenge, those dates are cleared too, so they go back to the automatic pick. Members' saved attempts keep their scores.
+- The security rules only let administrators write scenarios, and reject one without its required fields.
+
+## Sign-in protection
+
+- **Email verification:** new email/password accounts get a verification link and can't sign in until they open it. The sign-in page offers "Resend verification email". Google accounts are already verified. The link returns to `/login?verified=1`; your site's domain must be listed under Firebase console → Authentication → Settings → **Authorized domains** (localhost is there by default).
+- **Accounts created before this change are unverified.** They'll be asked to verify the next time they sign in (one click on "Resend verification email"). To skip that for a particular account, such as an administrator's, open Firebase console → Authentication → Users, or run a one-off Admin SDK script that sets `emailVerified: true`.
+- **Lockout:** after 5 wrong passwords for the same email within 15 minutes, sign-in to that email is paused for 15 minutes in that browser, with a countdown. This is enforced in the browser (`src/auth/loginThrottle.ts`), so it slows down guessing in the form; Firebase Authentication's own server-side limit (`auth/too-many-requests`) is what stops scripts that call Firebase directly.
+
+**Publish `firestore.rules` in the Firebase console after pulling this**, otherwise saving scenarios from the admin page is rejected.
+
 ## Tests
 
 End-to-end tests in `e2e/` use [Playwright](https://playwright.dev) to click through the app like a user. Each test is named after its manual test case (`TC-UA-01`, `TC-SR-01`, `TC-CR-01`).

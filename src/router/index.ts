@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PracticeView from '../views/PracticeView.vue'
 import { auth } from '@/firebase'
-import { authReady, onSessionLost, useAuth } from '@/auth/useAuth'
+import { authReady, isVerified, onSessionLost, useAuth } from '@/auth/useAuth'
 import { localDateKey } from '@/data/dates'
 
 declare module 'vue-router' {
@@ -117,7 +117,8 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   await authReady
-  const signedIn = auth.currentUser !== null
+  const current = auth.currentUser
+  const signedIn = current !== null && isVerified(current)
 
   if (to.meta.requiresAuth && !signedIn) {
     return { name: 'login', query: { redirect: to.fullPath } }

@@ -19,7 +19,19 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   // Desktop width, so the nav links aren't collapsed behind the "Menu" toggle
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: /admin-scenarios\.spec\.ts/,
+    },
+    {
+      name: 'admin-scenarios',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /admin-scenarios\.spec\.ts/,
+      dependencies: ['chromium'],
+    },
+  ],
   webServer: {
     command: `npx vite build --mode test --outDir dist-e2e && npx vite preview --mode test --outDir dist-e2e --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
