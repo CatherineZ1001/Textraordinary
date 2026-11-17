@@ -1,12 +1,17 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import ScenarioManager from '@/components/admin/ScenarioManager.vue'
 import DailyScheduleAdmin from '@/components/daily/DailyScheduleAdmin.vue'
+
+const scheduleKey = ref(0)
 </script>
 
 <template>
   <main class="admin">
     <h1>Manage scenarios</h1>
-    <p class="lede">Administrators only. Scenario management will go here.</p>
-    <DailyScheduleAdmin />
+    <p class="lede">Administrators only.</p>
+    <ScenarioManager @changed="scheduleKey++" />
+    <DailyScheduleAdmin :key="scheduleKey" />
   </main>
 </template>
 

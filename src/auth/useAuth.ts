@@ -1,18 +1,23 @@
-import { computed, readonly, ref, shallowRef, triggerRef } from 'vue'
+import { computed, readonly, ref, shallowRef } from 'vue'
+import { FirebaseError } from 'firebase/app'
 import {
   createUserWithEmailAndPassword,
   getIdTokenResult,
   onIdTokenChanged,
   reload,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
   updateProfile,
+  type ActionCodeSettings,
   type User,
 } from 'firebase/auth'
 import { auth, googleProvider } from '@/firebase'
 import { ensureUserProfile, hasAdminProfile } from '@/data/users'
+import { BAD_CREDENTIAL_CODES, EmailNotVerifiedError, LoginLockedError } from './errors'
+import { clearFailures, lockedUntil, recordFailure } from './loginThrottle'
 
 const user = shallowRef<User | null>(null)
 const isAdmin = ref(false)
@@ -30,6 +35,12 @@ export function onSessionLost(handler: () => void) {
   sessionLostHandler = handler
 }
 
+export function isVerified(u: User): boolean {
+  return u.emailVerified || !u.providerData.some((p) => p.providerId === 'password')
+}
+
+let handlingUnverified = false
+
 // The admin role is `admin: true` on the user's Firestore profile, set in the Firebase console
 // (the security rules stop members from setting it), or the older custom claim set by
 // scripts/set-admin.mjs. It is read again on every page load, so a reload picks up a change.
@@ -44,7 +55,13 @@ async function readAdminRole(next: User | null): Promise<boolean> {
   }
 }
 
-onIdTokenChanged(auth, async (next) => {
+onIdTokenChanged(auth, async (firebaseUser) => {
+  let next = firebaseUser
+  if (next && !isVerified(next)) {
+    if (!handlingUnverified) void signOut(auth).catch(() => {})
+    next = null
+  }
+
   // Work out the role first so nothing ever sees a signed-in user with a stale role.
   const admin = await readAdminRole(next)
 
@@ -92,9 +109,52 @@ document.addEventListener('visibilitychange', () => {
   }
 })
 
+function verificationSettings(): ActionCodeSettings {
+  return { url: `${window.location.origin}/login?verified=1` }
+}
+
+async function checkedSignIn(email: string, password: string): Promise<User> {
+  const until = lockedUntil(email)
+  if (until) throw new LoginLockedError(until)
+  try {
+    const credential = await signInWithEmailAndPassword(auth, email, password)
+    clearFailures(email)
+    return credential.user
+  } catch (err) {
+    if (err instanceof FirebaseError && BAD_CREDENTIAL_CODES.includes(err.code)) {
+      const lockStarted = recordFailure(email)
+      if (lockStarted) throw new LoginLockedError(lockStarted)
+    }
+    throw err
+  }
+}
+
 async function loginWithEmail(email: string, password: string) {
-  await signInWithEmailAndPassword(auth, email, password)
+  handlingUnverified = true
+  try {
+    const signedIn = await checkedSignIn(email, password)
+    if (!isVerified(signedIn)) {
+      await signOut(auth)
+      throw new EmailNotVerifiedError()
+    }
+  } finally {
+    handlingUnverified = false
+  }
   await saveProfile() // backfills accounts created before profiles existed
+}
+
+async function resendVerification(email: string, password: string) {
+  handlingUnverified = true
+  try {
+    const signedIn = await checkedSignIn(email, password)
+    try {
+      if (!isVerified(signedIn)) await sendEmailVerification(signedIn, verificationSettings())
+    } finally {
+      await signOut(auth)
+    }
+  } finally {
+    handlingUnverified = false
+  }
 }
 
 async function loginWithGoogle() {
@@ -102,15 +162,27 @@ async function loginWithGoogle() {
   await saveProfile()
 }
 
-async function register(email: string, password: string, displayName: string) {
-  // Signs the user in automatically; throws auth/email-already-in-use for duplicates.
-  const credential = await createUserWithEmailAndPassword(auth, email, password)
-  if (displayName) {
-    await updateProfile(credential.user, { displayName })
-    // updateProfile mutates the existing User object, so tell Vue it changed.
-    triggerRef(user)
+async function register(
+  email: string,
+  password: string,
+  displayName: string,
+): Promise<{ emailSent: boolean }> {
+  handlingUnverified = true
+  try {
+    const credential = await createUserWithEmailAndPassword(auth, email, password)
+    try {
+      if (displayName) await updateProfile(credential.user, { displayName })
+      await sendEmailVerification(credential.user, verificationSettings())
+      return { emailSent: true }
+    } catch (err) {
+      console.error('Sending the verification email failed:', err)
+      return { emailSent: false }
+    } finally {
+      await signOut(auth)
+    }
+  } finally {
+    handlingUnverified = false
   }
-  await saveProfile(displayName)
 }
 
 async function resetPassword(email: string) {
@@ -137,6 +209,7 @@ export function useAuth() {
     loginWithEmail,
     loginWithGoogle,
     register,
+    resendVerification,
     resetPassword,
     logout,
   }

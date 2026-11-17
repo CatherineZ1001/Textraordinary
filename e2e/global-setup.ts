@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { PROJECT_ID, TEST_USER } from './helpers'
+import { markEmailVerified, PROJECT_ID, TEST_USER } from './helpers'
 
 // Runs once before the tests, inside `firebase emulators:exec` (which sets the *_EMULATOR_HOST
 // variables): wipes the emulators, creates the test account and seeds the test scenario.
@@ -27,6 +27,8 @@ export default async function globalSetup() {
     },
   )
   if (!signUp.ok) throw new Error(`Creating the test user failed: ${await signUp.text()}`)
+  const { localId } = (await signUp.json()) as { localId: string }
+  await markEmailVerified(localId)
 
   execFileSync(process.execPath, ['scripts/seed-scenarios.mjs', 'e2e/fixtures/scenarios.json'], {
     stdio: 'inherit',

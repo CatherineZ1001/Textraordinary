@@ -54,7 +54,44 @@ export async function createUser(prefix: string) {
   )
   if (!res.ok) throw new Error(`Creating a test user failed: ${await res.text()}`)
   const { localId, idToken } = (await res.json()) as { localId: string; idToken: string }
+  await markEmailVerified(localId)
   return { ...user, uid: localId, idToken }
+}
+
+export async function markEmailVerified(uid: string) {
+  const res = await fetch(
+    `http://${emulatorHost('FIREBASE_AUTH_EMULATOR_HOST')}/identitytoolkit.googleapis.com/v1/projects/${PROJECT_ID}/accounts:update`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
+      body: JSON.stringify({ localId: uid, emailVerified: true }),
+    },
+  )
+  if (!res.ok) throw new Error(`Verifying the test user's email failed: ${await res.text()}`)
+}
+
+export async function latestVerificationCode(email: string): Promise<string | null> {
+  const res = await fetch(
+    `http://${emulatorHost('FIREBASE_AUTH_EMULATOR_HOST')}/emulator/v1/projects/${PROJECT_ID}/oobCodes`,
+  )
+  if (!res.ok) throw new Error(`Reading the emulator's emails failed: ${await res.text()}`)
+  const { oobCodes } = (await res.json()) as {
+    oobCodes: { email: string; requestType: string; oobCode: string }[]
+  }
+  const mine = oobCodes.filter((c) => c.email === email && c.requestType === 'VERIFY_EMAIL')
+  return mine.at(-1)?.oobCode ?? null
+}
+
+export async function applyVerificationCode(oobCode: string) {
+  const res = await fetch(
+    `http://${emulatorHost('FIREBASE_AUTH_EMULATOR_HOST')}/identitytoolkit.googleapis.com/v1/accounts:update?key=demo-api-key`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oobCode }),
+    },
+  )
+  if (!res.ok) throw new Error(`Applying the verification code failed: ${await res.text()}`)
 }
 
 const documentsUrl = () =>

@@ -94,11 +94,32 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    function nonEmptyText(v, max) {
+      return v is string && v.trim().size() > 0 && v.size() <= max;
+    }
+
+    function validScenario(d) {
+      return d.keys().hasOnly(['order', 'title', 'category', 'tone', 'context', 'contact', 'rounds'])
+        && d.order is int && d.order >= 0
+        && nonEmptyText(d.title, 200)
+        && d.category in ['professional', 'friendly', 'romantic', 'family']
+        && nonEmptyText(d.tone, 200)
+        && nonEmptyText(d.context, 2000)
+        && d.contact is map
+        && d.contact.keys().hasOnly(['name', 'role'])
+        && nonEmptyText(d.contact.name, 80)
+        && (!('role' in d.contact) || nonEmptyText(d.contact.role, 80))
+        && d.rounds is list && d.rounds.size() >= 1 && d.rounds.size() <= 20;
+    }
+
     // Practice scenarios: readable by anyone; only administrators may change them.
     // scripts/seed-scenarios.mjs uses the Admin SDK, which bypasses rules.
     match /scenarios/{scenarioId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if isAdmin()
+        && scenarioId.matches('sc-[0-9]{3,}')
+        && validScenario(request.resource.data);
+      allow delete: if isAdmin();
     }
 
     // User profiles: the document ID is the Firebase Auth uid.
