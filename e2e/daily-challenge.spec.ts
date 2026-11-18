@@ -73,7 +73,7 @@ test("TC-DC-01: play today's daily challenge once and keep the result", async ({
   expect(status).toBe(403)
 })
 
-test('TC-DC-02: replaying a past challenge does not change scores or the streak', async ({
+test('TC-DC-11: replaying a past challenge does not change scores or the streak', async ({
   page,
 }) => {
   await mockCoach(page, GOOD_GRADE)

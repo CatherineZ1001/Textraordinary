@@ -11,6 +11,8 @@ export default defineConfig({
   globalSetup: './e2e/global-setup.ts',
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  // More browsers at once can slow sign-in past its 5s timeout on a laptop
+  workers: 2,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html']],
   use: {
     baseURL: `http://localhost:${PORT}`,
